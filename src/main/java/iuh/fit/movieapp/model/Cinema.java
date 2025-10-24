@@ -43,7 +43,7 @@ public class Cinema {
     private String imageUrl;
 
     @Column(name = "is_active")
-    private boolean isActive = true;
+    private Boolean isActive = true;
 
     @OneToMany(mappedBy = "cinema", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference

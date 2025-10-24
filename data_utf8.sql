@@ -1,4 +1,14 @@
-SET NAMES 'utf8mb4';
+-- =============================================
+-- Insert Sample Data with UTF-8 Encoding
+-- =============================================
+
+-- Set charset for UTF-8
+SET NAMES utf8mb4;
+SET CHARACTER SET utf8mb4;
+
+-- =============================================
+-- Insert Users
+-- =============================================
 INSERT INTO users (username, email, password, full_name, phone, date_of_birth, gender, role)
 VALUES ('admin', 'admin@movieticket.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi',
         'Admin System', '0123456789', '1990-01-01', 'MALE', 'ADMIN'),
@@ -73,7 +83,7 @@ VALUES (1, 1, '2023-01-15', '09:00:00', '12:12:00', 120000),
        (5, 5, '2023-01-15', '19:00:00', '21:56:00', 130000);
 
 -- =============================================
--- Insert Seats (tạo ghế cho phòng 1)
+-- Insert Seats (tao ghe cho phong 1)
 -- =============================================
 INSERT INTO seats (cinema_hall_id, seat_number, seat_row, seat_type)
 VALUES
@@ -163,8 +173,8 @@ VALUES (3, 1),
 -- Insert Promotions
 -- =============================================
 INSERT INTO promotions (code, name, description, discount_percentage, min_order_amount, start_date, end_date)
-VALUES ('WELCOME10', 'Chào mừng khách hàng mới', 'Giảm 10% cho đơn hàng đầu tiên', 10.00, 100000, '2023-01-01',
+VALUES ('WELCOME10', 'Chao mung khach hang moi', 'Giam 10% cho don hang dau tien', 10.00, 100000, '2023-01-01',
         '2023-12-31'),
-       ('VIP20', 'Khách hàng VIP', 'Giảm 20% cho khách hàng VIP', 20.00, 200000, '2023-01-01', '2023-12-31'),
-       ('WEEKEND15', 'Cuối tuần vui vẻ', 'Giảm 15% cho suất chiếu cuối tuần', 15.00, 150000, '2023-01-01',
+       ('VIP20', 'Khach hang VIP', 'Giam 20% cho khach hang VIP', 20.00, 200000, '2023-01-01', '2023-12-31'),
+       ('WEEKEND15', 'Cuoi tuan vui ve', 'Giam 15% cho suat chieu cuoi tuan', 15.00, 150000, '2023-01-01',
         '2023-12-31');

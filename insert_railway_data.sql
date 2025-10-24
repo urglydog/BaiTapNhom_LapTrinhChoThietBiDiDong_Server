@@ -2,6 +2,10 @@
 -- Insert Sample Data for Railway Database
 -- =============================================
 
+-- Set UTF-8 encoding
+SET NAMES utf8mb4;
+SET CHARACTER SET utf8mb4;
+
 USE railway;
 
 -- =============================================
