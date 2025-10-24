@@ -89,7 +89,7 @@ public class AuthController {
                 .dateOfBirth(request.getDateOfBirth())
                 .gender(request.getGender())
                 .role(Role.CUSTOMER)
-                .isActive(true)
+                .active(true)
                 .build();
 
         userRepository.save(user);

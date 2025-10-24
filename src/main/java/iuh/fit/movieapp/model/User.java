@@ -48,7 +48,7 @@ public class User {
     private String avatarUrl;
 
     @Column(name = "is_active")
-    private boolean isActive = true;
+    private Boolean active = true;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)

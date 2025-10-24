@@ -8,7 +8,7 @@ import java.util.List;
 
 @Repository
 public interface CinemaRepository extends JpaRepository<Cinema, Integer> {
-    List<Cinema> findByIsActiveTrue();
+    List<Cinema> findByActiveTrue();
 
     List<Cinema> findByCity(String city);
 }

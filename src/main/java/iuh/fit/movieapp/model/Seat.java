@@ -37,7 +37,7 @@ public class Seat {
 
     @Column(name = "is_active")
     @Builder.Default
-    private boolean isActive = true;
+    private Boolean active = true;
 
     public enum SeatType {
         NORMAL, VIP, COUPLE

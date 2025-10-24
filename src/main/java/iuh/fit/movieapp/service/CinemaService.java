@@ -19,7 +19,7 @@ public class CinemaService {
     }
 
     public List<Cinema> findActiveCinemas() {
-        return cinemaRepo.findByIsActiveTrue();
+        return cinemaRepo.findByActiveTrue();
     }
 
     public List<Cinema> findByCity(String city) {

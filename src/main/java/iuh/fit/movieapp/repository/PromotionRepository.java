@@ -11,11 +11,11 @@ import java.util.List;
 
 @Repository
 public interface PromotionRepository extends JpaRepository<Promotion, Integer> {
-    List<Promotion> findByIsActiveTrue();
+    List<Promotion> findByActiveTrue();
 
-    @Query("SELECT p FROM Promotion p WHERE p.isActive = true AND p.startDate <= :currentDate AND p.endDate >= :currentDate")
+    @Query("SELECT p FROM Promotion p WHERE p.active = true AND p.startDate <= :currentDate AND p.endDate >= :currentDate")
     List<Promotion> findActivePromotions(@Param("currentDate") LocalDateTime currentDate);
 
-    @Query("SELECT p FROM Promotion p WHERE p.isActive = true AND p.startDate <= :currentDate AND p.endDate >= :currentDate AND (p.usageLimit IS NULL OR p.usedCount < p.usageLimit)")
+    @Query("SELECT p FROM Promotion p WHERE p.active = true AND p.startDate <= :currentDate AND p.endDate >= :currentDate AND (p.usageLimit IS NULL OR p.usedCount < p.usageLimit)")
     List<Promotion> findAvailablePromotions(@Param("currentDate") LocalDateTime currentDate);
 }

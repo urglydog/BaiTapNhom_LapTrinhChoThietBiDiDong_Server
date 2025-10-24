@@ -66,7 +66,7 @@ public class Movie {
     private String ageRating;
 
     @Column(name = "is_active")
-    private boolean isActive = true;
+    private Boolean active = true;
 
     @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference

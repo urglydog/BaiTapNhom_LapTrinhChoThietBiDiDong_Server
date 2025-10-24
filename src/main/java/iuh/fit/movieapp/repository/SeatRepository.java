@@ -11,7 +11,7 @@ import java.util.List;
 public interface SeatRepository extends JpaRepository<Seat, Integer> {
     List<Seat> findByCinemaHall(CinemaHall cinemaHall);
 
-    List<Seat> findByCinemaHallAndIsActiveTrue(CinemaHall cinemaHall);
+    List<Seat> findByCinemaHallAndActiveTrue(CinemaHall cinemaHall);
 
     List<Seat> findByCinemaHallAndSeatType(CinemaHall cinemaHall, Seat.SeatType seatType);
 }

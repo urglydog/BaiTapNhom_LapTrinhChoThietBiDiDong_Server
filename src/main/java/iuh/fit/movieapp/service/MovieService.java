@@ -20,7 +20,7 @@ public class MovieService {
     }
 
     public List<Movie> findActiveMovies() {
-        return movieRepo.findByIsActiveTrue();
+        return movieRepo.findByActiveTrue();
     }
 
     public List<Movie> findCurrentlyShowingMovies() {

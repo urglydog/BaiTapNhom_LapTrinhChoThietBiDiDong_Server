@@ -54,7 +54,7 @@ public class Promotion {
     private int usedCount = 0;
 
     @Column(name = "is_active")
-    private boolean isActive = true;
+    private Boolean active = true;
 
     @OneToMany(mappedBy = "promotion", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<UserPromotion> userPromotions;

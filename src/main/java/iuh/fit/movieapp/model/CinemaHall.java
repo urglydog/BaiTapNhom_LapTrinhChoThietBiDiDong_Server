@@ -37,7 +37,7 @@ public class CinemaHall {
     private String seatLayout;
 
     @Column(name = "is_active")
-    private boolean isActive = true;
+    private Boolean active = true;
 
     @OneToMany(mappedBy = "cinemaHall", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference

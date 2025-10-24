@@ -11,5 +11,5 @@ import java.util.List;
 public interface CinemaHallRepository extends JpaRepository<CinemaHall, Integer> {
     List<CinemaHall> findByCinema(Cinema cinema);
 
-    List<CinemaHall> findByCinemaAndIsActiveTrue(Cinema cinema);
+    List<CinemaHall> findByCinemaAndActiveTrue(Cinema cinema);
 }

@@ -48,7 +48,7 @@ public class Showtime {
     private BigDecimal price;
 
     @Column(name = "is_active")
-    private boolean isActive = true;
+    private Boolean active = true;
 
     @OneToMany(mappedBy = "showtime", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference
