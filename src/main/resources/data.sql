@@ -76,7 +76,6 @@ VALUES (1, 1, '2023-01-15', '09:00:00', '12:12:00', 120000),
 -- =============================================
 INSERT INTO seats (cinema_hall_id, seat_number, seat_row, seat_type)
 VALUES
--- Phòng 1 - 10 hàng, 20 ghế/hàng
 (1, 'A1', 'A', 'NORMAL'),
 (1, 'A2', 'A', 'NORMAL'),
 (1, 'A3', 'A', 'NORMAL'),
