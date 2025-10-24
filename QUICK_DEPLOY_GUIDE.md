@@ -23,13 +23,16 @@ railway init --template
 ### **Bước 3: Thêm Database**
 1. Vào [Railway Dashboard](https://railway.app)
 2. Chọn project của bạn
-3. Click **"New"** → **"Database"** → **"Add SQL Server"**
+3. Click **"New"** → **"Database"** → **"Add MySQL"**
 4. Đợi database được tạo (2-3 phút)
 
 ### **Bước 4: Chạy SQL Script**
 ```bash
-# Chạy script tạo database
-railway run sqlcmd -i railway_database_setup.sql
+# Chạy script tạo database (MySQL)
+railway run mysql -i railway_mysql_setup.sql
+
+# Hoặc sử dụng Railway CLI
+railway run --service your-database-service mysql < railway_mysql_setup.sql
 ```
 
 ### **Bước 5: Deploy App**
