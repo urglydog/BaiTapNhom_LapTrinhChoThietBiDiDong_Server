@@ -17,7 +17,7 @@
     <version>0.0.1-SNAPSHOT</version>
     <name>Movie-Ticket-Booking-System</name>
     <description>Movie Ticket Booking System Backend</description>
-    <packaging>jar</packaging>
+    <packaging>war</packaging>
 
     <properties>
         <java.version>17</java.version>
@@ -42,8 +42,8 @@
 
         <!-- Database -->
         <dependency>
-            <groupId>org.mariadb.jdbc</groupId>
-            <artifactId>mariadb-java-client</artifactId>
+            <groupId>com.microsoft.sqlserver</groupId>
+            <artifactId>mssql-jdbc</artifactId>
             <scope>runtime</scope>
         </dependency>
 
@@ -96,12 +96,6 @@
             <version>0.11.5</version>
             <scope>runtime</scope>
         </dependency>
-         <!-- https://mvnrepository.com/artifact/com.mysql/mysql-connector-j -->
-         <dependency>
-             <groupId>com.mysql</groupId>
-             <artifactId>mysql-connector-j</artifactId>
-             <version>9.4.0</version>
-         </dependency>
 
     </dependencies>
 

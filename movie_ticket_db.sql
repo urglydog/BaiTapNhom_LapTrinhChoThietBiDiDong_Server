@@ -2,51 +2,40 @@
 -- Database: Movie Ticket Booking System
 -- Description: Database for mobile movie ticket booking app
 -- Author: XStore Team
+-- Database: Microsoft SQL Server
 -- =============================================
 
 -- Tạo database
-CREATE DATABASE IF NOT EXISTS movie_ticket_db
-CHARACTER SET utf8mb4
-COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE movie_ticket_db;
 
 USE movie_ticket_db;
 
 -- =============================================
--- Bảng User Roles
+-- Bảng Users (Role được lưu dưới dạng ENUM)
 -- =============================================
-CREATE TABLE roles (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(50) NOT NULL UNIQUE,
-    description TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
 
 -- =============================================
 -- Bảng Users
 -- =============================================
 CREATE TABLE users (
-    id INT PRIMARY KEY AUTO_INCREMENT,
+    id INT IDENTITY(1,1) PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
     email VARCHAR(100) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     full_name VARCHAR(100) NOT NULL,
     phone VARCHAR(20),
     date_of_birth DATE,
-    gender ENUM('MALE', 'FEMALE', 'OTHER'),
+    gender VARCHAR(10) CHECK (gender IN ('MALE', 'FEMALE', 'OTHER')),
     avatar_url VARCHAR(255),
-    is_active BOOLEAN DEFAULT TRUE,
-    role_id INT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (role_id) REFERENCES roles(id)
+    is_active BIT DEFAULT 1,
+    role VARCHAR(10) NOT NULL CHECK (role IN ('ADMIN', 'STAFF', 'CUSTOMER'))
 );
 
 -- =============================================
 -- Bảng Cinemas
 -- =============================================
 CREATE TABLE cinemas (
-    id INT PRIMARY KEY AUTO_INCREMENT,
+    id INT IDENTITY(1,1) PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     address TEXT NOT NULL,
     city VARCHAR(50) NOT NULL,
@@ -54,9 +43,7 @@ CREATE TABLE cinemas (
     email VARCHAR(100),
     description TEXT,
     image_url VARCHAR(255),
-    is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    is_active BIT DEFAULT 1
 );
 
 -- =============================================
@@ -231,18 +218,12 @@ CREATE TABLE favourites (
 -- INSERT DỮ LIỆU MẪU
 -- =============================================
 
--- Insert Roles
-INSERT INTO roles (name, description) VALUES
-('ADMIN', 'Quản trị viên hệ thống'),
-('STAFF', 'Nhân viên rạp chiếu phim'),
-('CUSTOMER', 'Khách hàng');
-
 -- Insert Users
-INSERT INTO users (username, email, password, full_name, phone, date_of_birth, gender, role_id) VALUES
-('admin', 'admin@movieticket.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', 'Admin System', '0123456789', '1990-01-01', 'MALE', 1),
-('staff1', 'staff1@movieticket.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', 'Nguyễn Văn A', '0987654321', '1995-05-15', 'MALE', 2),
-('customer1', 'customer1@gmail.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', 'Trần Thị B', '0912345678', '1998-08-20', 'FEMALE', 3),
-('customer2', 'customer2@gmail.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', 'Lê Văn C', '0923456789', '1992-12-10', 'MALE', 3);
+INSERT INTO users (username, email, password, full_name, phone, date_of_birth, gender, role) VALUES
+('admin', 'admin@movieticket.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', 'Admin System', '0123456789', '1990-01-01', 'MALE', 'ADMIN'),
+('staff1', 'staff1@movieticket.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', 'Nguyễn Văn A', '0987654321', '1995-05-15', 'MALE', 'STAFF'),
+('customer1', 'customer1@gmail.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', 'Trần Thị B', '0912345678', '1998-08-20', 'FEMALE', 'CUSTOMER'),
+('customer2', 'customer2@gmail.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', 'Lê Văn C', '0923456789', '1992-12-10', 'MALE', 'CUSTOMER');
 
 -- Insert Cinemas
 INSERT INTO cinemas (name, address, city, phone, email, description) VALUES
