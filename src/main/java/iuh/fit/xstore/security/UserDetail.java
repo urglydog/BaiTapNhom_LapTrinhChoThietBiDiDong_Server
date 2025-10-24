@@ -1,7 +1,7 @@
 package iuh.fit.xstore.security;
 
-import iuh.fit.xstore.model.Account;
 import iuh.fit.xstore.model.Role;
+import iuh.fit.xstore.model.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,24 +16,44 @@ import java.util.List;
 @Getter
 @Setter
 public class UserDetail implements UserDetails {
-    private final Account account;
+    private final User user;
 
     @Override
     public String getUsername() {
-        return account.getUsername();
+        return user.getUsername();
     }
 
     @Override
     public String getPassword() {
-        return account.getPassword();
+        return user.getPassword();
     }
 
     public Role getRole() {
-        return account.getRole();
+        return user.getRole();
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + account.getRole().name()));
+        return List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return user.isActive();
     }
 }

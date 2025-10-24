@@ -6,58 +6,62 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public enum SuccessCode {
+    // === AUTHENTICATION ===
     LOGIN_SUCCESSFULLY(200, "Login successfully"),
     REGISTER_SUCCESSFULLY(200, "Register successfully"),
     RESET_PASSWORD_SUCCESSFULLY(200, "Reset password successfully"),
 
+    // === USER ===
     USER_CREATED(201, "User created successfully"),
     USER_UPDATED(200, "User updated successfully"),
     USER_DELETED(200, "User deleted successfully"),
 
-    ACCOUNT_CREATED(201, "Account created successfully"),
-    ACCOUNT_UPDATED(200, "Account updated successfully"),
-    ACCOUNT_DELETED(200, "Account deleted successfully"),
+    // === MOVIE ===
+    MOVIE_CREATED(201, "Movie created successfully"),
+    MOVIE_UPDATED(200, "Movie updated successfully"),
+    MOVIE_DELETED(200, "Movie deleted successfully"),
 
-    PRODUCT_CREATED(201, "Product created successfully"),
-    PRODUCT_UPDATED(200, "Product updated successfully"),
-    PRODUCT_DELETED(200, "Product deleted successfully"),
+    // === CINEMA ===
+    CINEMA_CREATED(201, "Cinema created successfully"),
+    CINEMA_UPDATED(200, "Cinema updated successfully"),
+    CINEMA_DELETED(200, "Cinema deleted successfully"),
 
-    PRODUCT_TYPE_CREATED(201, "Product type created successfully"),
-    PRODUCT_TYPE_UPDATED(200, "Product type updated successfully"),
-    PRODUCT_TYPE_DELETED(200, "Product type deleted successfully"),
+    // === CINEMA HALL ===
+    CINEMA_HALL_CREATED(201, "Cinema hall created successfully"),
+    CINEMA_HALL_UPDATED(200, "Cinema hall updated successfully"),
+    CINEMA_HALL_DELETED(200, "Cinema hall deleted successfully"),
 
-    ADDRESS_CREATED(201, "Address created successfully"),
-    ADDRESS_UPDATED(200, "Address updated successfully"),
-    ADDRESS_DELETED(200, "Address deleted successfully"),
+    // === SHOWTIME ===
+    SHOWTIME_CREATED(201, "Showtime created successfully"),
+    SHOWTIME_UPDATED(200, "Showtime updated successfully"),
+    SHOWTIME_DELETED(200, "Showtime deleted successfully"),
 
+    // === SEAT ===
+    SEAT_CREATED(201, "Seat created successfully"),
+    SEAT_UPDATED(200, "Seat updated successfully"),
+    SEAT_DELETED(200, "Seat deleted successfully"),
+
+    // === BOOKING ===
+    BOOKING_CREATED(201, "Booking created successfully"),
+    BOOKING_UPDATED(200, "Booking updated successfully"),
+    BOOKING_CANCELLED(200, "Booking cancelled successfully"),
+
+    // === FAVOURITE ===
     FAVOURITE_CREATED(201, "Favourite created successfully"),
     FAVOURITE_DELETED(200, "Favourite deleted successfully"),
 
-    // ===== ORDER =====
-    ORDER_CREATED(201, "Order created successfully"),
-    ORDER_UPDATED(200, "Order updated successfully"),
-    ORDER_DELETED(200, "Order deleted successfully"),
+    // === REVIEW ===
+    REVIEW_CREATED(201, "Review created successfully"),
+    REVIEW_UPDATED(200, "Review updated successfully"),
+    REVIEW_DELETED(200, "Review deleted successfully"),
+    REVIEW_APPROVED(200, "Review approved successfully"),
 
-    // ===== ORDER ITEM =====
-    ORDER_ITEM_CREATED(201, "Order item created successfully"),
-    ORDER_ITEM_UPDATED(200, "Order item updated successfully"),
-    ORDER_ITEM_DELETED(200, "Order item deleted successfully"),
+    // === PROMOTION ===
+    PROMOTION_CREATED(201, "Promotion created successfully"),
+    PROMOTION_UPDATED(200, "Promotion updated successfully"),
+    PROMOTION_DELETED(200, "Promotion deleted successfully"),
 
-    // === Discount Success ===
-    DISCOUNT_CREATED(201, "Discount created successfully"),
-    DISCOUNT_UPDATED(200, "Discount updated successfully"),
-    DISCOUNT_DELETED(200, "Discount deleted successfully"),
-
-    //=== stock ===
-    STOCK_CREATED(201, "Stock created successfully"),
-    STOCK_UPDATED(200, "Stock updated successfully"),
-    STOCK_DELETED(200, "Stock deleted successfully"),
-
-    //    === Stock item ===
-    STOCK_ITEM_CREATED(201, "Stock Item created successfully"),
-    STOCK_ITEM_UPDATED(200, "Stock Item updated successfully"),
-    STOCK_ITEM_DELETED(200, "Stock Item deleted successfully"),
-
+    // === GENERAL ===
     FETCH_SUCCESS(200, "Data fetched successfully");
 
     private final int code;

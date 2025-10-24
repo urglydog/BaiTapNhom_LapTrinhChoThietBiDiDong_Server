@@ -1,5 +1,5 @@
 package iuh.fit.xstore.model;
 
 public enum Role {
-    ADMIN, CUSTOMER
+    ADMIN, STAFF, CUSTOMER
 }

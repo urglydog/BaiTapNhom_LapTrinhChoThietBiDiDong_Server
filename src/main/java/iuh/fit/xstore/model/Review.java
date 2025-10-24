@@ -15,8 +15,8 @@ import java.time.LocalDateTime;
 @Builder
 
 @Entity
-@Table(name = "favourites")
-public class Favourite {
+@Table(name = "reviews")
+public class Review {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
@@ -30,4 +30,13 @@ public class Favourite {
     @JoinColumn(name = "movie_id", nullable = false)
     @JsonBackReference
     private Movie movie;
+
+    @Column(name = "rating", nullable = false)
+    private int rating; // 1-5 stars
+
+    @Column(name = "comment", columnDefinition = "TEXT")
+    private String comment;
+
+    @Column(name = "is_approved")
+    private boolean isApproved = false;
 }

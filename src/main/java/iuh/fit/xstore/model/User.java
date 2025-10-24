@@ -1,9 +1,11 @@
 package iuh.fit.xstore.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -13,7 +15,6 @@ import java.time.LocalDate;
 @EqualsAndHashCode
 @Builder
 
-
 @Entity
 @Table(name = "users")
 public class User {
@@ -21,32 +22,55 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Column(name = "first_name", nullable = false)
-    private String firstName;
+    @Column(name = "username", nullable = false, unique = true)
+    private String username;
 
-    @Column(name = "last_name")
-    private String lastName;
-
-    private LocalDate dob;
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
+
+    @Column(name = "password", nullable = false)
+    private String password;
+
+    @Column(name = "full_name", nullable = false)
+    private String fullName;
+
+    @Column(name = "phone")
     private String phone;
-    private String avatar;
 
-    private int point; // diem de xet loai user
+    @Column(name = "date_of_birth")
+    private LocalDate dateOfBirth;
 
-    @Column(name = "user_type")
     @Enumerated(EnumType.STRING)
-    private UserType userType; // loai user (tich diem) dong - bac - vang
+    @Column(name = "gender")
+    private Gender gender;
 
-    @OneToOne
-    @JoinColumn(name = "address_id")
-    private Address address;
+    @Column(name = "avatar_url")
+    private String avatarUrl;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "account_id")
-    private Account account;
+    @Column(name = "is_active")
+    private boolean isActive = true;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "cart_id")
-    private Cart cart;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    private Role role;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<Booking> bookings;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<Review> reviews;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<Favourite> favourites;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<UserPromotion> userPromotions;
+
+    public enum Gender {
+        MALE, FEMALE, OTHER
+    }
 }

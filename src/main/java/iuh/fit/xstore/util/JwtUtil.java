@@ -5,6 +5,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.ExpiredJwtException;
 import iuh.fit.xstore.config.JwtConfig;
 import iuh.fit.xstore.security.UserDetail;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
@@ -12,14 +13,17 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
+    @Autowired
+    private JwtConfig jwtConfig;
+
     // Tạo token
-    public static String generateToken(UserDetail user) {
+    public String generateToken(UserDetail user) {
         return Jwts.builder()
                 .setSubject(user.getUsername())
                 .claim("role", "ROLE_" + user.getRole())
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + JwtConfig.EXPIRATION_TIME))
-                .signWith(JwtConfig.SECRET_KEY)
+                .setExpiration(new Date(System.currentTimeMillis() + jwtConfig.getExpiration()))
+                .signWith(jwtConfig.getSecretKey())
                 .compact();
     }
 
@@ -47,7 +51,7 @@ public class JwtUtil {
 
     private Claims getClaims(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(JwtConfig.SECRET_KEY)
+                .setSigningKey(jwtConfig.getSecretKey())
                 .build()
                 .parseClaimsJws(token)
                 .getBody();

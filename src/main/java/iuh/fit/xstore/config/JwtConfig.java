@@ -1,11 +1,33 @@
 package iuh.fit.xstore.config;
 
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import jakarta.annotation.PostConstruct;
 import java.security.Key;
 
+@Component
 public class JwtConfig {
-    public static final Key SECRET_KEY =  Keys.hmacShaKeyFor("motChuoiThucSuDaiVaBaoMatChoJWT1234567890".getBytes());
-    public static final long EXPIRATION_TIME = 3600000;
-}
 
+    @Value("${jwt.secret}")
+    private String secret;
+
+    @Value("${jwt.expiration}")
+    private long expiration;
+
+    private Key secretKey;
+
+    @PostConstruct
+    public void init() {
+        this.secretKey = Keys.hmacShaKeyFor(secret.getBytes());
+    }
+
+    public Key getSecretKey() {
+        return secretKey;
+    }
+
+    public long getExpiration() {
+        return expiration;
+    }
+}

@@ -16,7 +16,15 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private static final String[] PUBLIC = {"/", "/auth/**", "/product/**"};
+    private static final String[] PUBLIC = {
+            "/",
+            "/api/auth/**",
+            "/api/movies/**",
+            "/api/cinemas/**",
+            "/api/showtimes/**",
+            "/api/reviews/**",
+            "/api/favourites/**"
+    };
 
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
@@ -28,8 +36,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PUBLIC).permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .anyRequest().authenticated()
-                );
+                        .anyRequest().authenticated());
 
         // Thêm filter JWT trước UsernamePasswordAuthenticationFilter
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

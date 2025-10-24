@@ -2,16 +2,15 @@ package iuh.fit.xstore.service;
 
 import iuh.fit.xstore.dto.response.AppException;
 import iuh.fit.xstore.dto.response.ErrorCode;
-import iuh.fit.xstore.model.Cart;
+import iuh.fit.xstore.model.Role;
 import iuh.fit.xstore.model.User;
-import iuh.fit.xstore.model.UserType;
 import iuh.fit.xstore.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -23,56 +22,62 @@ public class UserService {
         return userRepo.findAll();
     }
 
-
     public User findById(int id) {
         return userRepo.findById(id)
-                        .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-    }
-
-    public User findByUsername(String username) {
-        return userRepo.findByAccountUsername((username))
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
     }
 
-    //tao user
+    public User findByUsername(String username) {
+        return userRepo.findByUsername(username)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+    }
+
+    public User findByEmail(String email) {
+        return userRepo.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+    }
+
     public User createUser(User user) {
-        if (userRepo.existsByAccountUsername(user.getAccount().getUsername())) {
+        if (userRepo.existsByUsername(user.getUsername())) {
             throw new AppException(ErrorCode.USERNAME_EXISTED);
         }
-        if (user.getAccount() != null) {
-            user.getAccount().setPassword(
-                    passwordEncoder.encode(user.getAccount().getPassword())
-            );
+        if (userRepo.existsByEmail(user.getEmail())) {
+            throw new AppException(ErrorCode.EMAIL_EXISTED);
         }
 
-        Cart cart = Cart.builder().total(0).build();
-        user.setCart(cart);
-
-        user.setUserType(UserType.COPPER);
-        user.setPoint(0);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        if (user.getRole() == null) {
+            user.setRole(Role.CUSTOMER);
+        }
 
         return userRepo.save(user);
     }
 
-
-    // Cập nhật user
     public User updateUser(User user) {
         User existedUser = userRepo.findById(user.getId())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-        existedUser.setFirstName(user.getFirstName());
-        existedUser.setLastName(user.getLastName());
+        existedUser.setFullName(user.getFullName());
         existedUser.setEmail(user.getEmail());
         existedUser.setPhone(user.getPhone());
-        existedUser.setAvatar(user.getAvatar());
+        existedUser.setDateOfBirth(user.getDateOfBirth());
+        existedUser.setGender(user.getGender());
+        existedUser.setAvatarUrl(user.getAvatarUrl());
 
         return userRepo.save(existedUser);
     }
 
-    // Xoá user
     public int deleteUser(int id) {
         findById(id);
         userRepo.deleteById(id);
         return id;
+    }
+
+    public boolean existsByUsername(String username) {
+        return userRepo.existsByUsername(username);
+    }
+
+    public boolean existsByEmail(String email) {
+        return userRepo.existsByEmail(email);
     }
 }

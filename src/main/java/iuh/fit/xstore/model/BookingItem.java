@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.math.BigDecimal;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -15,19 +15,22 @@ import java.time.LocalDateTime;
 @Builder
 
 @Entity
-@Table(name = "favourites")
-public class Favourite {
+@Table(name = "booking_items")
+public class BookingItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "booking_id", nullable = false)
     @JsonBackReference
-    private User user;
+    private Booking booking;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "movie_id", nullable = false)
+    @JoinColumn(name = "seat_id", nullable = false)
     @JsonBackReference
-    private Movie movie;
+    private Seat seat;
+
+    @Column(name = "price", nullable = false, precision = 10, scale = 2)
+    private BigDecimal price;
 }

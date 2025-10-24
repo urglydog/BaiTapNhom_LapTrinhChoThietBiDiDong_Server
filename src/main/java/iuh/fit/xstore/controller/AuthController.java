@@ -6,7 +6,6 @@ import iuh.fit.xstore.dto.request.ResetPasswordRequest;
 import iuh.fit.xstore.dto.response.ApiResponse;
 import iuh.fit.xstore.dto.response.ErrorCode;
 import iuh.fit.xstore.dto.response.SuccessCode;
-import iuh.fit.xstore.model.Account;
 import iuh.fit.xstore.model.Role;
 import iuh.fit.xstore.model.User;
 import iuh.fit.xstore.repository.UserRepository;
@@ -26,7 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 @AllArgsConstructor
 public class AuthController {
 
@@ -39,22 +38,23 @@ public class AuthController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private JwtUtil jwtUtil;
+
     @PostMapping("/login")
     public ApiResponse<?> login(@RequestBody LoginRequest request) {
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             request.getUsername(),
-                            request.getPassword()
-                    )
-            );
+                            request.getPassword()));
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
             UserDetail userDetail = (UserDetail) authentication.getPrincipal();
-            String token = JwtUtil.generateToken(userDetail);
+            String token = jwtUtil.generateToken(userDetail);
 
-
-            User user = userRepository.getByAccountUsername(request.getUsername());
+            User user = userRepository.findByUsername(request.getUsername())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
 
             Map<String, Object> data = new HashMap<>();
             data.put("token", token);
@@ -72,20 +72,26 @@ public class AuthController {
     // ================= REGISTER =================
     @PostMapping("/register")
     public ApiResponse<?> register(@RequestBody RegisterRequest request) {
-        if (userRepository.existsByAccountUsername(request.getUsername())) {
-            return new ApiResponse<>(ErrorCode.USER_EXISTED);
+        if (userRepository.existsByUsername(request.getUsername())) {
+            return new ApiResponse<>(ErrorCode.USERNAME_EXISTED);
+        }
+
+        if (userRepository.existsByEmail(request.getEmail())) {
+            return new ApiResponse<>(ErrorCode.EMAIL_EXISTED);
         }
 
         User user = User.builder()
-                .firstName(request.getFirstName())
-                .lastName(request.getLastName())
-                .dob(request.getDob())
-                .account(Account.builder()
-                        .username(request.getUsername())
-                        .password(passwordEncoder.encode(request.getPassword()))
-                        .role(Role.CUSTOMER)
-                        .build())
+                .username(request.getUsername())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .fullName(request.getFullName())
+                .phone(request.getPhone())
+                .dateOfBirth(request.getDateOfBirth())
+                .gender(request.getGender())
+                .role(Role.CUSTOMER)
+                .isActive(true)
                 .build();
+
         userRepository.save(user);
 
         return new ApiResponse<>(SuccessCode.REGISTER_SUCCESSFULLY, user);
@@ -94,7 +100,7 @@ public class AuthController {
     // ================= RESET PASSWORD =================
     @PostMapping("/reset-password")
     public ApiResponse<?> resetPassword(@RequestBody ResetPasswordRequest request) {
-        User user = userRepository.findByAccountUsername(request.getUsername())
+        User user = userRepository.findByUsername(request.getUsername())
                 .orElse(null);
 
         if (user == null) {
@@ -102,7 +108,7 @@ public class AuthController {
         }
 
         // Mã hóa mật khẩu mới
-        user.getAccount().setPassword(passwordEncoder.encode(request.getNewPassword()));
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
 
         return new ApiResponse<>(SuccessCode.RESET_PASSWORD_SUCCESSFULLY, user);
