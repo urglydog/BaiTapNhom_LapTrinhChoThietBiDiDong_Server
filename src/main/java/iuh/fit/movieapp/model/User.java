@@ -1,5 +1,6 @@
 package iuh.fit.movieapp.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
@@ -29,6 +30,7 @@ public class User {
     private String email;
 
     @Column(name = "password", nullable = false)
+    @JsonIgnore(value = true)
     private String password;
 
     @Column(name = "full_name", nullable = false)

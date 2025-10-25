@@ -15,15 +15,15 @@ VALUES ('admin', 'admin@movieticket.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z
 -- =============================================
 -- Insert Cinemas
 -- =============================================
-INSERT INTO cinemas (name, address, city, phone, email, description)
+INSERT INTO cinemas (name, address, city, phone, email, description, image_url)
 VALUES ('CGV Vincom Center', '72 Le Thanh Ton, Quan 1, TP.HCM', 'Ho Chi Minh City', '1900 6017', 'cgv@cgv.vn',
-        'Rap chieu phim hien dai voi cong nghe IMAX'),
+        'Rap chieu phim hien dai voi cong nghe IMAX', 'https://images.unsplash.com/photo-1489599808427-5a6b3b3b3b3b?w=800'),
        ('Lotte Cinema Diamond Plaza', '34 Le Duan, Quan 1, TP.HCM', 'Ho Chi Minh City', '1900 1533', 'lotte@lotte.vn',
-        'Rap chieu phim cao cap voi ghe VIP'),
+        'Rap chieu phim cao cap voi ghe VIP', 'https://images.unsplash.com/photo-1489599808427-5a6b3b3b3b3b?w=800'),
        ('Galaxy Cinema Nguyen Du', '116 Nguyen Du, Quan 1, TP.HCM', 'Ho Chi Minh City', '1900 2224', 'galaxy@galaxy.vn',
-        'Rap chieu phim voi nhieu phong chieu'),
+        'Rap chieu phim voi nhieu phong chieu', 'https://images.unsplash.com/photo-1489599808427-5a6b3b3b3b3b?w=800'),
        ('BHD Star Cineplex', '59A Ly Tu Trong, Quan 1, TP.HCM', 'Ho Chi Minh City', '1900 6363', 'bhd@bhd.vn',
-        'Rap chieu phim voi cong nghe 4DX');
+        'Rap chieu phim voi cong nghe 4DX', 'https://images.unsplash.com/photo-1489599808427-5a6b3b3b3b3b?w=800');
 
 -- =============================================
 -- Insert Cinema Halls
@@ -42,25 +42,27 @@ VALUES (1, 'Phong 1 - IMAX', 200),
 -- Insert Movies
 -- =============================================
 INSERT INTO movies (title, description, duration, release_date, end_date, genre, director, cast, rating, language,
-                    subtitle, age_rating)
+                    subtitle, age_rating, poster_url, trailer_url)
 VALUES ('Avatar: The Way of Water',
         'Jake Sully va gia dinh cua anh ay kham pha nhung vung bien cua Pandora va gap go nhung sinh vat bien ky la.',
         192, '2022-12-16', '2023-03-16', 'Sci-Fi, Action', 'James Cameron',
-        'Sam Worthington, Zoe Saldana, Sigourney Weaver', 8.5, 'English', 'Vietnamese', 'PG-13'),
+        'Sam Worthington, Zoe Saldana, Sigourney Weaver', 8.5, 'English', 'Vietnamese', 'PG-13',
+        'https://images.unsplash.com/photo-1574375927938-c5f442f1e76e?w=500', 'https://www.youtube.com/watch?v=d9MyW72ELq0'),
        ('Black Panther: Wakanda Forever',
         'Sau cai chet cua Vua T''Challa, Wakanda phai doi mat voi nhung thach thuc moi.', 161, '2022-11-11',
         '2023-02-11', 'Action, Adventure', 'Ryan Coogler', 'Letitia Wright, Angela Bassett, Lupita Nyong''o', 7.8,
-        'English', 'Vietnamese', 'PG-13'),
+        'English', 'Vietnamese', 'PG-13', 'https://images.unsplash.com/photo-1574375927938-c5f442f1e76e?w=500', 'https://www.youtube.com/watch?v=_Z3QKkl1WyM'),
        ('Top Gun: Maverick', 'Pete "Maverick" Mitchell tro lai voi nhiem vu nguy hiem nhat trong su nghiep cua minh.',
         131, '2022-05-27', '2023-01-27', 'Action, Drama', 'Joseph Kosinski',
-        'Tom Cruise, Miles Teller, Jennifer Connelly', 8.9, 'English', 'Vietnamese', 'PG-13'),
+        'Tom Cruise, Miles Teller, Jennifer Connelly', 8.9, 'English', 'Vietnamese', 'PG-13',
+        'https://images.unsplash.com/photo-1574375927938-c5f442f1e76e?w=500', 'https://www.youtube.com/watch?v=qSqVVswa420'),
        ('Spider-Man: No Way Home', 'Peter Parker can su giup do cua Doctor Strange de che giau danh tinh cua minh.',
         148, '2021-12-17', '2022-06-17', 'Action, Adventure', 'Jon Watts', 'Tom Holland, Zendaya, Benedict Cumberbatch',
-        8.7, 'English', 'Vietnamese', 'PG-13'),
+        8.7, 'English', 'Vietnamese', 'PG-13', 'https://images.unsplash.com/photo-1574375927938-c5f442f1e76e?w=500', 'https://www.youtube.com/watch?v=JfVOs4VSpmA'),
        ('The Batman',
         'Khi mot ke giet nguoi hang loat bat dau tan sat gioi thuong luu cua Gotham, Batman phai dieu tra.', 176,
         '2022-03-04', '2022-09-04', 'Action, Crime', 'Matt Reeves', 'Robert Pattinson, Zoe Kravitz, Paul Dano', 8.2,
-        'English', 'Vietnamese', 'PG-13');
+        'English', 'Vietnamese', 'PG-13', 'https://images.unsplash.com/photo-1574375927938-c5f442f1e76e?w=500', 'https://www.youtube.com/watch?v=mqqft2x_Aa4');
 
 -- =============================================
 -- Insert Showtimes
