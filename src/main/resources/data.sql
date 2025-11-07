@@ -2,7 +2,7 @@
 SET NAMES utf8mb4;
 SET CHARACTER SET utf8mb4;
 
-INSERT INTO users (username, email, password, full_name, phone, date_of_birth, gender, role)
+INSERT IGNORE INTO users (username, email, password, full_name, phone, date_of_birth, gender, role)
 VALUES ('admin', 'admin@movieticket.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi',
         'Admin System', '0123456789', '1990-01-01', 'MALE', 'ADMIN'),
        ('staff1', 'staff1@movieticket.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi',
@@ -15,7 +15,7 @@ VALUES ('admin', 'admin@movieticket.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z
 -- =============================================
 -- Insert Cinemas
 -- =============================================
-INSERT INTO cinemas (name, address, city, phone, email, description, image_url)
+INSERT IGNORE INTO cinemas (name, address, city, phone, email, description, image_url)
 VALUES ('CGV Vincom Center', '72 Le Thanh Ton, Quan 1, TP.HCM', 'Ho Chi Minh City', '1900 6017', 'cgv@cgv.vn',
         'Rap chieu phim hien dai voi cong nghe IMAX', 'https://images.unsplash.com/photo-1489599808427-5a6b3b3b3b3b?w=800'),
        ('Lotte Cinema Diamond Plaza', '34 Le Duan, Quan 1, TP.HCM', 'Ho Chi Minh City', '1900 1533', 'lotte@lotte.vn',
@@ -28,7 +28,7 @@ VALUES ('CGV Vincom Center', '72 Le Thanh Ton, Quan 1, TP.HCM', 'Ho Chi Minh Cit
 -- =============================================
 -- Insert Cinema Halls
 -- =============================================
-INSERT INTO cinema_halls (cinema_id, hall_name, total_seats)
+INSERT IGNORE INTO cinema_halls (cinema_id, hall_name, total_seats)
 VALUES (1, 'Phong 1 - IMAX', 200),
        (1, 'Phong 2 - Standard', 150),
        (1, 'Phong 3 - VIP', 100),
@@ -41,33 +41,103 @@ VALUES (1, 'Phong 1 - IMAX', 200),
 -- =============================================
 -- Insert Movies
 -- =============================================
-INSERT INTO movies (title, description, duration, release_date, end_date, genre, director, cast, rating, language,
+INSERT IGNORE INTO movies (title, description, duration, release_date, end_date, genre, director, cast, rating, language,
                     subtitle, age_rating, poster_url, trailer_url)
 VALUES ('Avatar: The Way of Water',
         'Jake Sully va gia dinh cua anh ay kham pha nhung vung bien cua Pandora va gap go nhung sinh vat bien ky la.',
         192, '2022-12-16', '2023-03-16', 'Sci-Fi, Action', 'James Cameron',
         'Sam Worthington, Zoe Saldana, Sigourney Weaver', 8.5, 'English', 'Vietnamese', 'PG-13',
-        'https://images.unsplash.com/photo-1574375927938-c5f442f1e76e?w=500', 'https://www.youtube.com/watch?v=d9MyW72ELq0'),
+        'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1762528821/avatar-way-of-water_exbrsq.jpg', 'https://www.youtube.com/watch?v=d9MyW72ELq0'),
        ('Black Panther: Wakanda Forever',
         'Sau cai chet cua Vua T''Challa, Wakanda phai doi mat voi nhung thach thuc moi.', 161, '2022-11-11',
         '2023-02-11', 'Action, Adventure', 'Ryan Coogler', 'Letitia Wright, Angela Bassett, Lupita Nyong''o', 7.8,
-        'English', 'Vietnamese', 'PG-13', 'https://images.unsplash.com/photo-1574375927938-c5f442f1e76e?w=500', 'https://www.youtube.com/watch?v=_Z3QKkl1WyM'),
+        'English', 'Vietnamese', 'PG-13', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1762528822/black-panther-wakanda-forever_mr8llu.webp', 'https://www.youtube.com/watch?v=_Z3QKkl1WyM'),
        ('Top Gun: Maverick', 'Pete "Maverick" Mitchell tro lai voi nhiem vu nguy hiem nhat trong su nghiep cua minh.',
         131, '2022-05-27', '2023-01-27', 'Action, Drama', 'Joseph Kosinski',
         'Tom Cruise, Miles Teller, Jennifer Connelly', 8.9, 'English', 'Vietnamese', 'PG-13',
-        'https://images.unsplash.com/photo-1574375927938-c5f442f1e76e?w=500', 'https://www.youtube.com/watch?v=qSqVVswa420'),
+        'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1762528821/top-gun-maverick_g2fcar.jpg', 'https://www.youtube.com/watch?v=qSqVVswa420'),
        ('Spider-Man: No Way Home', 'Peter Parker can su giup do cua Doctor Strange de che giau danh tinh cua minh.',
         148, '2021-12-17', '2022-06-17', 'Action, Adventure', 'Jon Watts', 'Tom Holland, Zendaya, Benedict Cumberbatch',
-        8.7, 'English', 'Vietnamese', 'PG-13', 'https://images.unsplash.com/photo-1574375927938-c5f442f1e76e?w=500', 'https://www.youtube.com/watch?v=JfVOs4VSpmA'),
+        8.7, 'English', 'Vietnamese', 'PG-13', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1762528820/spider-man-no-way-home_no0olj.jpg', 'https://www.youtube.com/watch?v=JfVOs4VSpmA'),
        ('The Batman',
         'Khi mot ke giet nguoi hang loat bat dau tan sat gioi thuong luu cua Gotham, Batman phai dieu tra.', 176,
         '2022-03-04', '2022-09-04', 'Action, Crime', 'Matt Reeves', 'Robert Pattinson, Zoe Kravitz, Paul Dano', 8.2,
-        'English', 'Vietnamese', 'PG-13', 'https://images.unsplash.com/photo-1574375927938-c5f442f1e76e?w=500', 'https://www.youtube.com/watch?v=mqqft2x_Aa4');
+        'English', 'Vietnamese', 'PG-13', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1762528821/the-batman_nvf7fa.jpg', 'https://www.youtube.com/watch?v=mqqft2x_Aa4'),
+       ('Avengers: Endgame',
+        'Phan ket thuc cua loat phim Avengers, cac siêu anh hung phai doan ket de cuu vu tru.', 181,
+        '2019-04-26', '2019-08-26', 'Action, Adventure, Sci-Fi', 'Anthony Russo, Joe Russo',
+        'Robert Downey Jr., Chris Evans, Mark Ruffalo, Chris Hemsworth', 8.4,
+        'English', 'Vietnamese', 'PG-13', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1762528822/avengers-endgame_nzuqwd.jpg', 'https://www.youtube.com/watch?v=TcMBFSGVi1c'),
+       ('Dune',
+        'Paul Atreides danh gia mot hanh tinh nguy hiem de bao ve gia dinh va nhan dan cua minh.', 155,
+        '2021-10-22', '2022-04-22', 'Sci-Fi, Adventure', 'Denis Villeneuve',
+        'Timothee Chalamet, Rebecca Ferguson, Oscar Isaac', 8.0,
+        'English', 'Vietnamese', 'PG-13', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1762528819/dune_duwnky.jpg', 'https://www.youtube.com/watch?v=8g18jFHCLXk'),
+       ('No Time to Die',
+        'James Bond da nghi huu phai quay lai de chong lai mot ke thu nguy hiem voi vu khi sinh hoc.', 163,
+        '2021-10-08', '2022-04-08', 'Action, Thriller', 'Cary Joji Fukunaga',
+        'Daniel Craig, Rami Malek, Lea Seydoux', 7.3,
+        'English', 'Vietnamese', 'PG-13', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1762529509/no-time-to-die_q8vtso.webp', 'https://www.youtube.com/watch?v=BIhNsAtPbPI'),
+       ('Fast & Furious 9',
+        'Dom va gia dinh phai chong lai ke thu nguy hiem nhat trong lich su cua ho.', 143,
+        '2021-06-25', '2021-12-25', 'Action, Crime', 'Justin Lin',
+        'Vin Diesel, Michelle Rodriguez, Tyrese Gibson', 5.2,
+        'English', 'Vietnamese', 'PG-13', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1762528821/fast-furious-9_ecp9ys.webp', 'https://www.youtube.com/watch?v=FUK2kdPsBws'),
+       ('Shang-Chi and the Legend of the Ten Rings',
+        'Shang-Chi phai doi mat voi qua khu cua minh khi bi keo vao to chuc Ten Rings cua nguoi cha.', 132,
+        '2021-09-03', '2022-03-03', 'Action, Adventure, Fantasy', 'Destin Daniel Cretton',
+        'Simu Liu, Awkwafina, Tony Leung', 7.4,
+        'English', 'Vietnamese', 'PG-13', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1762528820/shang-chi-and-the-legend-of-the-ten-rings_pk1llq.webp', 'https://www.youtube.com/watch?v=8YjFbMbfXaE'),
+       ('Doctor Strange in the Multiverse of Madness',
+        'Doctor Strange phai di qua nhieu vu tru de bao ve mot thiếu nữ co kha nang di chuyen giua cac vu tru.', 126,
+        '2022-05-06', '2022-11-06', 'Action, Adventure, Fantasy', 'Sam Raimi',
+        'Benedict Cumberbatch, Elizabeth Olsen, Chiwetel Ejiofor', 6.9,
+        'English', 'Vietnamese', 'PG-13', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1762528819/doctor-strange-multiverse-madness_ebbsos.jpg', 'https://www.youtube.com/watch?v=aWzlQ2N6qqg'),
+       ('Jurassic World Dominion',
+        'Owen va Claire phai cuu loai khung long khoi tuyet chung khi chung bi phan tan khap the gioi.', 147,
+        '2022-06-10', '2022-12-10', 'Action, Adventure, Sci-Fi', 'Colin Trevorrow',
+        'Chris Pratt, Bryce Dallas Howard, Laura Dern', 5.7,
+        'English', 'Vietnamese', 'PG-13', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1762528821/jurassic-world-dominion_m4dsqg.webp', 'https://www.youtube.com/watch?v=fb5ELWi-ekk'),
+       ('Minions: The Rise of Gru',
+        'Gru, mot cau be 12 tuoi, mo uoc tro thanh siêu ac nhan trong nhom ac nhan xau xa nhat the gioi.', 87,
+        '2022-07-01', '2022-12-31', 'Animation, Comedy, Adventure', 'Kyle Balda',
+        'Steve Carell, Pierre Coffin, Alan Arkin', 6.5,
+        'English', 'Vietnamese', 'PG', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1762528819/minions-rise-of-gru_ifry6o.jpg', 'https://www.youtube.com/watch?v=6DxjJzmYsXo'),
+       ('Everything Everywhere All at Once',
+        'Mot phu nu Trung Quoc My phai cuu the gioi bang cach ket noi voi cac phien ban khac cua minh trong nhieu vu tru.', 139,
+        '2022-03-25', '2022-09-25', 'Action, Comedy, Drama', 'Daniel Kwan, Daniel Scheinert',
+        'Michelle Yeoh, Stephanie Hsu, Ke Huy Quan', 8.1,
+        'English', 'Vietnamese', 'R', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1762528820/everything-everywhere-all-at-once_berquk.webp', 'https://www.youtube.com/watch?v=wxN1T1uxQ2g'),
+       ('The Matrix Resurrections',
+        'Neo phai quay lai Matrix de tim ra su that ve thuc te cua minh.', 148,
+        '2021-12-22', '2022-06-22', 'Action, Sci-Fi', 'Lana Wachowski',
+        'Keanu Reeves, Carrie-Anne Moss, Yahya Abdul-Mateen II', 5.7,
+        'English', 'Vietnamese', 'R', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1762528821/the-matrix-resurrections_dvtwfs.webp', 'https://www.youtube.com/watch?v=9ix7TUGVYIo'),
+       ('Encanto',
+        'Mot gia dinh Colombia ky dieu song trong mot ngoi nha ma thuat, nhung mot cô gai tre khong co phep thuat.', 102,
+        '2021-11-24', '2022-05-24', 'Animation, Comedy, Family', 'Byron Howard, Jared Bush',
+        'Stephanie Beatriz, Maria Cecilia Botero, John Leguizamo', 7.3,
+        'English', 'Vietnamese', 'PG', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1762528820/encanto_rfor26.jpg', 'https://www.youtube.com/watch?v=CaimKeDcudo'),
+       ('Free Guy',
+        'Mot nhan vat trong game khong biet minh la AI, quyet dinh tro thanh anh hung va cuu the gioi cua minh.', 115,
+        '2021-08-13', '2022-02-13', 'Action, Comedy, Sci-Fi', 'Shawn Levy',
+        'Ryan Reynolds, Jodie Comer, Taika Waititi', 7.1,
+        'English', 'Vietnamese', 'PG-13', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1762528820/free-guy_yzsdmt.jpg', 'https://www.youtube.com/watch?v=X2m-08cOAbc'),
+       ('Cruella',
+        'Cau chuyen ve nguon goc cua Cruella de Vil, mot thiet ke thoi trang tai nang nhung ac doc.', 134,
+        '2021-05-28', '2021-11-28', 'Comedy, Crime', 'Craig Gillespie',
+        'Emma Stone, Emma Thompson, Joel Fry', 7.3,
+        'English', 'Vietnamese', 'PG-13', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1762528822/cruella_yoz4oa.webp', 'https://www.youtube.com/watch?v=gmRKv7n2If8'),
+       ('Luca',
+        'Cau be nguoi ca Luca trai nghiem mot mua he ky dieu o Riviera, Italy cung nguoi ban moi cua minh.', 95,
+        '2021-06-18', '2021-12-18', 'Animation, Comedy, Family', 'Enrico Casarosa',
+        'Jacob Tremblay, Jack Dylan Grazer, Emma Berman', 7.5,
+        'English', 'Vietnamese', 'PG', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1762528820/luca_gljmav.webp', 'https://www.youtube.com/watch?v=mYfJxlgR2jw');
 
 -- =============================================
 -- Insert Showtimes
 -- =============================================
-INSERT INTO showtimes (movie_id, cinema_hall_id, show_date, start_time, end_time, price)
+INSERT IGNORE INTO showtimes (movie_id, cinema_hall_id, show_date, start_time, end_time, price)
 VALUES (1, 1, '2023-01-15', '09:00:00', '12:12:00', 120000),
        (1, 1, '2023-01-15', '13:00:00', '16:12:00', 120000),
        (1, 1, '2023-01-15', '17:00:00', '20:12:00', 120000),
@@ -80,7 +150,7 @@ VALUES (1, 1, '2023-01-15', '09:00:00', '12:12:00', 120000),
 -- =============================================
 -- Insert Seats (tạo ghế cho phòng 1)
 -- =============================================
-INSERT INTO seats (cinema_hall_id, seat_number, seat_row, seat_type)
+INSERT IGNORE INTO seats (cinema_hall_id, seat_number, seat_row, seat_type)
 VALUES
 (1, 'A1', 'A', 'NORMAL'),
 (1, 'A2', 'A', 'NORMAL'),
@@ -148,7 +218,7 @@ VALUES
 -- =============================================
 -- Insert Reviews
 -- =============================================
-INSERT INTO reviews (user_id, movie_id, rating, comment, is_approved)
+INSERT IGNORE INTO reviews (user_id, movie_id, rating, comment, is_approved)
 VALUES (3, 1, 5, 'Phim hay tuyet voi! Hieu ung dep mat.', 1),
        (4, 1, 4, 'Tot nhung hoi dai.', 1),
        (3, 2, 5, 'Black Panther tuyet voi!', 1),
@@ -158,7 +228,7 @@ VALUES (3, 1, 5, 'Phim hay tuyet voi! Hieu ung dep mat.', 1),
 -- =============================================
 -- Insert Favourites
 -- =============================================
-INSERT INTO favourites (user_id, movie_id)
+INSERT IGNORE INTO favourites (user_id, movie_id)
 VALUES (3, 1),
        (3, 2),
        (4, 3),
@@ -167,7 +237,7 @@ VALUES (3, 1),
 -- =============================================
 -- Insert Promotions
 -- =============================================
-INSERT INTO promotions (code, name, description, discount_percentage, min_order_amount, start_date, end_date)
+INSERT IGNORE INTO promotions (code, name, description, discount_percentage, min_order_amount, start_date, end_date)
 VALUES ('WELCOME10', 'Chao mung khach hang moi', 'Giam 10% cho don hang dau tien', 10.00, 100000, '2023-01-01',
         '2023-12-31'),
        ('VIP20', 'Khach hang VIP', 'Giam 20% cho khach hang VIP', 20.00, 200000, '2023-01-01', '2023-12-31'),

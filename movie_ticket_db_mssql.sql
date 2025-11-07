@@ -195,15 +195,6 @@ CREATE TABLE user_promotions (
 );
 
 -- =============================================
--- DỮ LIỆU MẪU
--- =============================================
-INSERT INTO users (username, email, password, full_name, phone, date_of_birth, gender, role) VALUES
-('admin', 'admin@movieticket.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', 'Admin System', '0123456789', '1990-01-01', 'MALE', 'ADMIN'),
-('staff1', 'staff1@movieticket.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', 'Nguyễn Văn A', '0987654321', '1995-05-15', 'MALE', 'STAFF'),
-('customer1', 'customer1@gmail.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', 'Trần Thị B', '0912345678', '1998-08-20', 'FEMALE', 'CUSTOMER'),
-('customer2', 'customer2@gmail.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', 'Lê Văn C', '0923456789', '1992-12-10', 'MALE', 'CUSTOMER');
-
--- =============================================
 -- INDEXES
 -- =============================================
 CREATE INDEX idx_users_email ON users(email);
