@@ -237,9 +237,9 @@ VALUES (3, 1),
 -- =============================================
 -- Insert Promotions
 -- =============================================
-INSERT IGNORE INTO promotions (code, name, description, discount_percentage, min_order_amount, start_date, end_date)
-VALUES ('WELCOME10', 'Chao mung khach hang moi', 'Giam 10% cho don hang dau tien', 10.00, 100000, '2023-01-01',
-        '2023-12-31'),
-       ('VIP20', 'Khach hang VIP', 'Giam 20% cho khach hang VIP', 20.00, 200000, '2023-01-01', '2023-12-31'),
-       ('WEEKEND15', 'Cuoi tuan vui ve', 'Giam 15% cho suat chieu cuoi tuan', 15.00, 150000, '2023-01-01',
-        '2023-12-31');
+INSERT IGNORE INTO promotions (name, description, discount_type, discount_value, min_amount, max_discount, start_date, end_date, usage_limit)
+VALUES ('Chao mung khach hang moi', 'Giam 10% cho don hang dau tien', 'PERCENTAGE', 10.00, 100000, 50000, '2023-01-01 00:00:00',
+        '2023-12-31 23:59:59', 1000),
+       ('Khach hang VIP', 'Giam 20% cho khach hang VIP', 'PERCENTAGE', 20.00, 200000, 100000, '2023-01-01 00:00:00', '2023-12-31 23:59:59', 500),
+       ('Cuoi tuan vui ve', 'Giam 15% cho suat chieu cuoi tuan', 'PERCENTAGE', 15.00, 150000, 75000, '2023-01-01 00:00:00',
+        '2023-12-31 23:59:59', 200);
