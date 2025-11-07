@@ -2,40 +2,38 @@
 -- Database: Movie Ticket Booking System
 -- Description: Database for mobile movie ticket booking app
 -- Author: XStore Team
--- Database: Microsoft SQL Server
+-- Database: MariaDB
 -- =============================================
 
--- Tạo database
-CREATE DATABASE movie_ticket_db;
+-- Tạo database với collation hỗ trợ UTF-8
+CREATE DATABASE IF NOT EXISTS movie_ticket_db
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_unicode_ci;
 
 USE movie_ticket_db;
-
--- =============================================
--- Bảng Users (Role được lưu dưới dạng ENUM)
--- =============================================
 
 -- =============================================
 -- Bảng Users
 -- =============================================
 CREATE TABLE users (
-    id INT IDENTITY(1,1) PRIMARY KEY,
+    id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
     email VARCHAR(100) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     full_name VARCHAR(100) NOT NULL,
     phone VARCHAR(20),
     date_of_birth DATE,
-    gender VARCHAR(10) CHECK (gender IN ('MALE', 'FEMALE', 'OTHER')),
+    gender ENUM('MALE', 'FEMALE', 'OTHER'),
     avatar_url VARCHAR(255),
-    is_active BIT DEFAULT 1,
-    role VARCHAR(10) NOT NULL CHECK (role IN ('ADMIN', 'STAFF', 'CUSTOMER'))
+    is_active BOOLEAN DEFAULT TRUE,
+    role ENUM('ADMIN', 'STAFF', 'CUSTOMER') NOT NULL
 );
 
 -- =============================================
 -- Bảng Cinemas
 -- =============================================
 CREATE TABLE cinemas (
-    id INT IDENTITY(1,1) PRIMARY KEY,
+    id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     address TEXT NOT NULL,
     city VARCHAR(50) NOT NULL,
@@ -43,29 +41,27 @@ CREATE TABLE cinemas (
     email VARCHAR(100),
     description TEXT,
     image_url VARCHAR(255),
-    is_active BIT DEFAULT 1
+    is_active BOOLEAN DEFAULT TRUE
 );
 
 -- =============================================
 -- Bảng Cinema Halls
 -- =============================================
 CREATE TABLE cinema_halls (
-    id INT PRIMARY KEY AUTO_INCREMENT,
+    id INT AUTO_INCREMENT PRIMARY KEY,
     cinema_id INT NOT NULL,
     hall_name VARCHAR(50) NOT NULL,
     total_seats INT NOT NULL,
-    seat_layout JSON, -- Lưu layout ghế ngồi
+    seat_layout JSON, -- JSON data
     is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (cinema_id) REFERENCES cinemas(id)
+    FOREIGN KEY (cinema_id) REFERENCES cinemas(id) ON DELETE CASCADE
 );
 
 -- =============================================
 -- Bảng Movies
 -- =============================================
 CREATE TABLE movies (
-    id INT PRIMARY KEY AUTO_INCREMENT,
+    id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(200) NOT NULL,
     description TEXT,
     duration INT NOT NULL, -- Thời lượng phim (phút)
@@ -80,16 +76,14 @@ CREATE TABLE movies (
     language VARCHAR(50),
     subtitle VARCHAR(50),
     age_rating VARCHAR(10), -- PG, PG-13, R, etc.
-    is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    is_active BOOLEAN DEFAULT TRUE
 );
 
 -- =============================================
 -- Bảng Showtimes
 -- =============================================
 CREATE TABLE showtimes (
-    id INT PRIMARY KEY AUTO_INCREMENT,
+    id INT AUTO_INCREMENT PRIMARY KEY,
     movie_id INT NOT NULL,
     cinema_hall_id INT NOT NULL,
     show_date DATE NOT NULL,
@@ -97,25 +91,21 @@ CREATE TABLE showtimes (
     end_time TIME NOT NULL,
     price DECIMAL(10,2) NOT NULL,
     is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (movie_id) REFERENCES movies(id),
-    FOREIGN KEY (cinema_hall_id) REFERENCES cinema_halls(id)
+    FOREIGN KEY (movie_id) REFERENCES movies(id) ON DELETE CASCADE,
+    FOREIGN KEY (cinema_hall_id) REFERENCES cinema_halls(id) ON DELETE CASCADE
 );
 
 -- =============================================
 -- Bảng Seats
 -- =============================================
 CREATE TABLE seats (
-    id INT PRIMARY KEY AUTO_INCREMENT,
+    id INT AUTO_INCREMENT PRIMARY KEY,
     cinema_hall_id INT NOT NULL,
     seat_number VARCHAR(10) NOT NULL,
     seat_row VARCHAR(5) NOT NULL,
     seat_type ENUM('NORMAL', 'VIP', 'COUPLE') DEFAULT 'NORMAL',
     is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (cinema_hall_id) REFERENCES cinema_halls(id),
+    FOREIGN KEY (cinema_hall_id) REFERENCES cinema_halls(id) ON DELETE CASCADE,
     UNIQUE KEY unique_seat (cinema_hall_id, seat_number)
 );
 
@@ -123,7 +113,7 @@ CREATE TABLE seats (
 -- Bảng Bookings
 -- =============================================
 CREATE TABLE bookings (
-    id INT PRIMARY KEY AUTO_INCREMENT,
+    id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     showtime_id INT NOT NULL,
     booking_code VARCHAR(20) NOT NULL UNIQUE,
@@ -131,87 +121,79 @@ CREATE TABLE bookings (
     booking_status ENUM('PENDING', 'CONFIRMED', 'CANCELLED', 'COMPLETED') DEFAULT 'PENDING',
     payment_status ENUM('PENDING', 'PAID', 'FAILED', 'REFUNDED') DEFAULT 'PENDING',
     payment_method VARCHAR(50),
-    booking_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (showtime_id) REFERENCES showtimes(id)
+    booking_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (showtime_id) REFERENCES showtimes(id) ON DELETE CASCADE
 );
 
 -- =============================================
--- Bảng Booking Items (Chi tiết vé đã đặt)
+-- Bảng Booking Items
 -- =============================================
 CREATE TABLE booking_items (
-    id INT PRIMARY KEY AUTO_INCREMENT,
+    id INT AUTO_INCREMENT PRIMARY KEY,
     booking_id INT NOT NULL,
     seat_id INT NOT NULL,
     price DECIMAL(10,2) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (booking_id) REFERENCES bookings(id),
-    FOREIGN KEY (seat_id) REFERENCES seats(id)
-);
-
--- =============================================
--- Bảng Promotions
--- =============================================
-CREATE TABLE promotions (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(100) NOT NULL,
-    description TEXT,
-    discount_type ENUM('PERCENTAGE', 'FIXED_AMOUNT') NOT NULL,
-    discount_value DECIMAL(10,2) NOT NULL,
-    min_amount DECIMAL(10,2) DEFAULT 0,
-    max_discount DECIMAL(10,2),
-    start_date DATETIME NOT NULL,
-    end_date DATETIME NOT NULL,
-    usage_limit INT,
-    used_count INT DEFAULT 0,
-    is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
-
--- =============================================
--- Bảng User Promotions (Mã giảm giá của user)
--- =============================================
-CREATE TABLE user_promotions (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    user_id INT NOT NULL,
-    promotion_id INT NOT NULL,
-    used_at TIMESTAMP NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (promotion_id) REFERENCES promotions(id)
+    FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE,
+    FOREIGN KEY (seat_id) REFERENCES seats(id) ON DELETE CASCADE
 );
 
 -- =============================================
 -- Bảng Reviews
 -- =============================================
 CREATE TABLE reviews (
-    id INT PRIMARY KEY AUTO_INCREMENT,
+    id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     movie_id INT NOT NULL,
     rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
     comment TEXT,
     is_approved BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (movie_id) REFERENCES movies(id)
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (movie_id) REFERENCES movies(id) ON DELETE CASCADE
 );
 
 -- =============================================
 -- Bảng Favourites
 -- =============================================
 CREATE TABLE favourites (
-    id INT PRIMARY KEY AUTO_INCREMENT,
+    id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     movie_id INT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (movie_id) REFERENCES movies(id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (movie_id) REFERENCES movies(id) ON DELETE CASCADE,
     UNIQUE KEY unique_favourite (user_id, movie_id)
+);
+
+-- =============================================
+-- Bảng Promotions
+-- =============================================
+CREATE TABLE promotions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    code VARCHAR(20) NOT NULL UNIQUE,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    discount_percentage DECIMAL(5,2),
+    discount_amount DECIMAL(10,2),
+    min_order_amount DECIMAL(10,2),
+    max_discount_amount DECIMAL(10,2),
+    usage_limit INT,
+    used_count INT DEFAULT 0,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE
+);
+
+-- =============================================
+-- Bảng User Promotions
+-- =============================================
+CREATE TABLE user_promotions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    promotion_id INT NOT NULL,
+    used_at DATETIME,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (promotion_id) REFERENCES promotions(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_user_promotion (user_id, promotion_id)
 );
 
 -- =============================================
@@ -246,7 +228,7 @@ INSERT INTO cinema_halls (cinema_id, hall_name, total_seats) VALUES
 -- Insert Movies
 INSERT INTO movies (title, description, duration, release_date, end_date, genre, director, cast, rating, language, subtitle, age_rating) VALUES
 ('Avatar: The Way of Water', 'Jake Sully và gia đình của anh ấy khám phá những vùng biển của Pandora và gặp gỡ những sinh vật biển kỳ lạ.', 192, '2022-12-16', '2023-03-16', 'Sci-Fi, Action', 'James Cameron', 'Sam Worthington, Zoe Saldana, Sigourney Weaver', 8.5, 'English', 'Vietnamese', 'PG-13'),
-('Black Panther: Wakanda Forever', 'Sau cái chết của Vua T\'Challa, Wakanda phải đối mặt với những thách thức mới.', 161, '2022-11-11', '2023-02-11', 'Action, Adventure', 'Ryan Coogler', 'Letitia Wright, Angela Bassett, Lupita Nyong\'o', 7.8, 'English', 'Vietnamese', 'PG-13'),
+('Black Panther: Wakanda Forever', 'Sau cái chết của Vua T''Challa, Wakanda phải đối mặt với những thách thức mới.', 161, '2022-11-11', '2023-02-11', 'Action, Adventure', 'Ryan Coogler', 'Letitia Wright, Angela Bassett, Lupita Nyong''o', 7.8, 'English', 'Vietnamese', 'PG-13'),
 ('Top Gun: Maverick', 'Pete "Maverick" Mitchell trở lại với nhiệm vụ nguy hiểm nhất trong sự nghiệp của mình.', 131, '2022-05-27', '2023-01-27', 'Action, Drama', 'Joseph Kosinski', 'Tom Cruise, Miles Teller, Jennifer Connelly', 8.9, 'English', 'Vietnamese', 'PG-13'),
 ('Spider-Man: No Way Home', 'Peter Parker cần sự giúp đỡ của Doctor Strange để che giấu danh tính của mình.', 148, '2021-12-17', '2022-06-17', 'Action, Adventure', 'Jon Watts', 'Tom Holland, Zendaya, Benedict Cumberbatch', 8.7, 'English', 'Vietnamese', 'PG-13'),
 ('The Batman', 'Khi một kẻ giết người hàng loạt bắt đầu tàn sát giới thượng lưu của Gotham, Batman phải điều tra.', 176, '2022-03-04', '2022-09-04', 'Action, Crime', 'Matt Reeves', 'Robert Pattinson, Zoë Kravitz, Paul Dano', 8.2, 'English', 'Vietnamese', 'PG-13');
@@ -280,39 +262,8 @@ INSERT INTO seats (cinema_hall_id, seat_number, seat_row, seat_type) VALUES
 (1, 'C11', 'C', 'VIP'), (1, 'C12', 'C', 'VIP'), (1, 'C13', 'C', 'VIP'), (1, 'C14', 'C', 'VIP'), (1, 'C15', 'C', 'VIP'),
 (1, 'C16', 'C', 'VIP'), (1, 'C17', 'C', 'VIP'), (1, 'C18', 'C', 'VIP'), (1, 'C19', 'C', 'VIP'), (1, 'C20', 'C', 'VIP');
 
--- Insert Promotions
-INSERT INTO promotions (name, description, discount_type, discount_value, min_amount, max_discount, start_date, end_date, usage_limit) VALUES
-('Giảm giá 20% cho khách hàng mới', 'Áp dụng cho đơn hàng đầu tiên', 'PERCENTAGE', 20.00, 0, 50000, '2023-01-01 00:00:00', '2023-12-31 23:59:59', 1000),
-('Giảm 50k cho đơn từ 200k', 'Áp dụng cho đơn hàng từ 200k trở lên', 'FIXED_AMOUNT', 50000, 200000, 50000, '2023-01-01 00:00:00', '2023-12-31 23:59:59', 500),
-('Combo 2 vé giảm 10%', 'Mua 2 vé cùng lúc được giảm 10%', 'PERCENTAGE', 10.00, 0, 30000, '2023-01-01 00:00:00', '2023-12-31 23:59:59', 200);
-
--- Insert User Promotions
-INSERT INTO user_promotions (user_id, promotion_id) VALUES
-(3, 1), (4, 1), (3, 2), (4, 2);
-
--- Insert Reviews
-INSERT INTO reviews (user_id, movie_id, rating, comment, is_approved) VALUES
-(3, 1, 5, 'Phim hay tuyệt vời! Hiệu ứng đẹp mắt.', TRUE),
-(4, 1, 4, 'Tốt nhưng hơi dài.', TRUE),
-(3, 2, 4, 'Phim hay, diễn viên đóng tốt.', TRUE),
-(4, 3, 5, 'Phim hành động hay nhất năm!', TRUE);
-
--- Insert Favourites
-INSERT INTO favourites (user_id, movie_id) VALUES
-(3, 1), (3, 2), (4, 1), (4, 3);
-
--- Insert sample bookings
-INSERT INTO bookings (user_id, showtime_id, booking_code, total_amount, booking_status, payment_status, payment_method) VALUES
-(3, 1, 'BK001', 240000, 'CONFIRMED', 'PAID', 'MOMO'),
-(4, 2, 'BK002', 200000, 'CONFIRMED', 'PAID', 'BANKING');
-
--- Insert booking items
-INSERT INTO booking_items (booking_id, seat_id, price) VALUES
-(1, 1, 120000), (1, 2, 120000),
-(2, 21, 100000), (2, 22, 100000);
-
 -- =============================================
--- Tạo Indexes để tối ưu performance
+-- Tạo Indexes
 -- =============================================
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_username ON users(username);

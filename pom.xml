@@ -12,16 +12,19 @@
         <relativePath/> <!-- dùng version ổn định hơn -->
     </parent>
 
+    <properties>
+        <java.version>21</java.version>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <maven.compiler.release>21</maven.compiler.release>
+    </properties>
+
     <groupId>iuh.fit</groupId>
     <artifactId>Movie-Ticket-Booking-System</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>Movie-Ticket-Booking-System</name>
     <description>Movie Ticket Booking System Backend</description>
-    <packaging>jar</packaging>
-
-    <properties>
-        <java.version>17</java.version>
-    </properties>
+    <packaging>war</packaging>
 
     <dependencies>
         <!-- Spring Boot Starters -->
@@ -29,7 +32,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -42,8 +44,8 @@
 
         <!-- Database -->
         <dependency>
-            <groupId>org.mariadb.jdbc</groupId>
-            <artifactId>mariadb-java-client</artifactId>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
             <scope>runtime</scope>
         </dependency>
 
@@ -96,12 +98,11 @@
             <version>0.11.5</version>
             <scope>runtime</scope>
         </dependency>
-         <!-- https://mvnrepository.com/artifact/com.mysql/mysql-connector-j -->
-         <dependency>
-             <groupId>com.mysql</groupId>
-             <artifactId>mysql-connector-j</artifactId>
-             <version>9.4.0</version>
-         </dependency>
+        <dependency>
+            <groupId>org.mariadb.jdbc</groupId>
+            <artifactId>mariadb-java-client</artifactId>
+            <version>3.3.3</version>
+        </dependency>
 
     </dependencies>
 
@@ -111,15 +112,17 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>iuh.fit.xstore.MovieTicketBookingApplication</mainClass>
+                    <mainClass>iuh.fit.movieapp.MovieTicketBookingApplication</mainClass>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
                 <configuration>
-                    <source>17</source>
-                    <target>17</target>
+                    <source>21</source>
+                    <target>21</target>
+                    <release>21</release>
                 </configuration>
             </plugin>
         </plugins>
