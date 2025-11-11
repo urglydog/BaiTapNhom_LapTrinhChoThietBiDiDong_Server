@@ -60,7 +60,7 @@ CREATE TABLE cinema_halls (
 -- =============================================
 CREATE TABLE movies (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    title VARCHAR(200) NOT NULL,
+    title VARCHAR(200) NOT NULL UNIQUE,
     description TEXT,
     duration INT NOT NULL,
     release_date DATE NOT NULL,
@@ -199,6 +199,7 @@ CREATE TABLE user_promotions (
 -- =============================================
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_username ON users(username);
+CREATE INDEX idx_movies_title ON movies(title);
 CREATE INDEX idx_showtimes_movie_date ON showtimes(movie_id, show_date);
 CREATE INDEX idx_showtimes_cinema_hall ON showtimes(cinema_hall_id);
 CREATE INDEX idx_bookings_user ON bookings(user_id);
