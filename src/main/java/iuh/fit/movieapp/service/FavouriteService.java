@@ -67,4 +67,14 @@ public class FavouriteService {
                 .orElseThrow(() -> new AppException(ErrorCode.MOVIE_NOT_FOUND));
         return favouriteRepo.existsByUserAndMovie(user, movie);
     }
+
+    public void deleteFavouriteByMovieId(int userId, int movieId) {
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        Movie movie = movieRepo.findById(movieId)
+                .orElseThrow(() -> new AppException(ErrorCode.MOVIE_NOT_FOUND));
+        Favourite favourite = favouriteRepo.findByUserAndMovie(user, movie)
+                .orElseThrow(() -> new AppException(ErrorCode.FAVOURITE_NOT_FOUND));
+        favouriteRepo.delete(favourite);
+    }
 }

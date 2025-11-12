@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class FavouriteRequest {
-    private int movieId;
+public class ChangePasswordRequest {
+    private String oldPassword;
+    private String newPassword;
 }
