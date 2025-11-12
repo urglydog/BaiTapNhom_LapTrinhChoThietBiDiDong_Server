@@ -24,12 +24,12 @@ public class ReviewController {
 
     @GetMapping("/movie/{movieId}")
     public ApiResponse<List<Review>> getReviewsByMovie(@PathVariable int movieId) {
-        return new ApiResponse<>(SuccessCode.FETCH_SUCCESS, reviewService.findByMovie(null)); // Cần truyền Movie object
+        return new ApiResponse<>(SuccessCode.FETCH_SUCCESS, reviewService.findByMovieId(movieId));
     }
 
     @GetMapping("/user/{userId}")
     public ApiResponse<List<Review>> getReviewsByUser(@PathVariable int userId) {
-        return new ApiResponse<>(SuccessCode.FETCH_SUCCESS, reviewService.findByUser(null)); // Cần truyền User object
+        return new ApiResponse<>(SuccessCode.FETCH_SUCCESS, reviewService.findByUserId(userId));
     }
 
     @GetMapping("/{id}")
@@ -65,13 +65,11 @@ public class ReviewController {
 
     @GetMapping("/movie/{movieId}/rating")
     public ApiResponse<Double> getAverageRating(@PathVariable int movieId) {
-        return new ApiResponse<>(SuccessCode.FETCH_SUCCESS, reviewService.getAverageRating(null)); // Cần truyền Movie
-                                                                                                   // object
+        return new ApiResponse<>(SuccessCode.FETCH_SUCCESS, reviewService.getAverageRatingByMovieId(movieId));
     }
 
     @GetMapping("/movie/{movieId}/count")
     public ApiResponse<Long> getReviewCount(@PathVariable int movieId) {
-        return new ApiResponse<>(SuccessCode.FETCH_SUCCESS, reviewService.getReviewCount(null)); // Cần truyền Movie
-                                                                                                 // object
+        return new ApiResponse<>(SuccessCode.FETCH_SUCCESS, reviewService.getReviewCountByMovieId(movieId));
     }
 }

@@ -3,17 +3,24 @@ package iuh.fit.movieapp.service;
 import iuh.fit.movieapp.dto.response.AppException;
 import iuh.fit.movieapp.dto.response.ErrorCode;
 import iuh.fit.movieapp.model.Movie;
+import iuh.fit.movieapp.model.Review;
+import iuh.fit.movieapp.model.Showtime;
 import iuh.fit.movieapp.repository.MovieRepository;
+import iuh.fit.movieapp.service.ReviewService;
+import iuh.fit.movieapp.service.ShowtimeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class MovieService {
     private final MovieRepository movieRepo;
+    private final ShowtimeService showtimeService;
+    private final ReviewService reviewService;
 
     public List<Movie> findAll() {
         return movieRepo.findAll();
@@ -66,5 +73,30 @@ public class MovieService {
         Movie movie = findById(id);
         movie.setActive(false);
         movieRepo.save(movie);
+    }
+
+    public List<Showtime> getShowtimesByMovieId(int movieId) {
+        return showtimeService.findByMovieId(movieId);
+    }
+
+    public List<Review> getReviewsByMovieId(int movieId) {
+        return reviewService.findByMovieId(movieId);
+    }
+
+    public List<Movie> searchMovies(String query) {
+        String lowerQuery = query.toLowerCase();
+        return movieRepo.findAll().stream()
+                .filter(movie -> 
+                    (movie.getTitle() != null && movie.getTitle().toLowerCase().contains(lowerQuery)) ||
+                    (movie.getGenre() != null && movie.getGenre().toLowerCase().contains(lowerQuery)) ||
+                    (movie.getDirector() != null && movie.getDirector().toLowerCase().contains(lowerQuery)) ||
+                    (movie.getCast() != null && movie.getCast().toLowerCase().contains(lowerQuery)) ||
+                    (movie.getDescription() != null && movie.getDescription().toLowerCase().contains(lowerQuery))
+                )
+                .collect(Collectors.toList());
+    }
+
+    public Review addReview(Review review) {
+        return reviewService.createReview(review);
     }
 }
