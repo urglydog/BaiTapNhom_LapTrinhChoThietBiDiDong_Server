@@ -1,5 +1,6 @@
 package iuh.fit.movieapp.controller;
 
+import iuh.fit.movieapp.dto.request.ChangePasswordRequest;
 import iuh.fit.movieapp.dto.request.LoginRequest;
 import iuh.fit.movieapp.dto.request.RegisterRequest;
 import iuh.fit.movieapp.dto.request.ResetPasswordRequest;
@@ -112,5 +113,60 @@ public class AuthController {
         userRepository.save(user);
 
         return new ApiResponse<>(SuccessCode.RESET_PASSWORD_SUCCESSFULLY, user);
+    }
+
+    // ================= GET CURRENT USER =================
+    @GetMapping("/me")
+    public ApiResponse<?> getCurrentUser() {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || authentication.getName() == null) {
+                return new ApiResponse<>(ErrorCode.UNAUTHORIZED);
+            }
+
+            String username = authentication.getName();
+            User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            return new ApiResponse<>(SuccessCode.FETCH_SUCCESS, user);
+        } catch (Exception e) {
+            return new ApiResponse<>(ErrorCode.UNAUTHORIZED);
+        }
+    }
+
+    // ================= LOGOUT =================
+    @PostMapping("/logout")
+    public ApiResponse<?> logout() {
+        // JWT is stateless, so logout is handled client-side by removing the token
+        // This endpoint is for consistency with frontend expectations
+        return new ApiResponse<>(SuccessCode.FETCH_SUCCESS, "Logged out successfully");
+    }
+
+    // ================= CHANGE PASSWORD =================
+    @PutMapping("/change-password")
+    public ApiResponse<?> changePassword(@RequestBody ChangePasswordRequest request) {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || authentication.getName() == null) {
+                return new ApiResponse<>(ErrorCode.UNAUTHORIZED);
+            }
+
+            String username = authentication.getName();
+            User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            // Verify old password
+            if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
+                return new ApiResponse<>(ErrorCode.INVALID_PASSWORD);
+            }
+
+            // Update password
+            user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+            userRepository.save(user);
+
+            return new ApiResponse<>(SuccessCode.RESET_PASSWORD_SUCCESSFULLY, user);
+        } catch (Exception e) {
+            return new ApiResponse<>(ErrorCode.UNAUTHORIZED);
+        }
     }
 }

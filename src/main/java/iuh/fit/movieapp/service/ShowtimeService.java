@@ -5,6 +5,8 @@ import iuh.fit.movieapp.dto.response.ErrorCode;
 import iuh.fit.movieapp.model.CinemaHall;
 import iuh.fit.movieapp.model.Movie;
 import iuh.fit.movieapp.model.Showtime;
+import iuh.fit.movieapp.repository.CinemaHallRepository;
+import iuh.fit.movieapp.repository.MovieRepository;
 import iuh.fit.movieapp.repository.ShowtimeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ShowtimeService {
     private final ShowtimeRepository showtimeRepo;
+    private final MovieRepository movieRepo;
+    private final CinemaHallRepository cinemaHallRepo;
 
     public List<Showtime> findAll() {
         return showtimeRepo.findAll();
@@ -25,7 +29,19 @@ public class ShowtimeService {
         return showtimeRepo.findByMovie(movie);
     }
 
+    public List<Showtime> findByMovieId(int movieId) {
+        Movie movie = movieRepo.findById(movieId)
+                .orElseThrow(() -> new AppException(ErrorCode.MOVIE_NOT_FOUND));
+        return showtimeRepo.findByMovie(movie);
+    }
+
     public List<Showtime> findByCinemaHall(CinemaHall cinemaHall) {
+        return showtimeRepo.findByCinemaHall(cinemaHall);
+    }
+
+    public List<Showtime> findByCinemaHallId(int cinemaHallId) {
+        CinemaHall cinemaHall = cinemaHallRepo.findById(cinemaHallId)
+                .orElseThrow(() -> new AppException(ErrorCode.CINEMA_HALL_NOT_FOUND));
         return showtimeRepo.findByCinemaHall(cinemaHall);
     }
 
@@ -33,7 +49,19 @@ public class ShowtimeService {
         return showtimeRepo.findActiveShowtimesByMovieAndDate(movie, showDate);
     }
 
+    public List<Showtime> findByMovieIdAndDate(int movieId, LocalDate showDate) {
+        Movie movie = movieRepo.findById(movieId)
+                .orElseThrow(() -> new AppException(ErrorCode.MOVIE_NOT_FOUND));
+        return showtimeRepo.findActiveShowtimesByMovieAndDate(movie, showDate);
+    }
+
     public List<Showtime> findByCinemaHallAndDate(CinemaHall cinemaHall, LocalDate showDate) {
+        return showtimeRepo.findActiveShowtimesByCinemaHallAndDate(cinemaHall, showDate);
+    }
+
+    public List<Showtime> findByCinemaHallIdAndDate(int cinemaHallId, LocalDate showDate) {
+        CinemaHall cinemaHall = cinemaHallRepo.findById(cinemaHallId)
+                .orElseThrow(() -> new AppException(ErrorCode.CINEMA_HALL_NOT_FOUND));
         return showtimeRepo.findActiveShowtimesByCinemaHallAndDate(cinemaHall, showDate);
     }
 

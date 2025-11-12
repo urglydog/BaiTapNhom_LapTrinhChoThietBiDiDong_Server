@@ -2,7 +2,9 @@ package iuh.fit.movieapp.controller;
 
 import iuh.fit.movieapp.dto.response.ApiResponse;
 import iuh.fit.movieapp.dto.response.SuccessCode;
+import iuh.fit.movieapp.model.Seat;
 import iuh.fit.movieapp.model.Showtime;
+import iuh.fit.movieapp.service.SeatService;
 import iuh.fit.movieapp.service.ShowtimeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -18,6 +20,7 @@ import java.util.List;
 public class ShowtimeController {
 
     private final ShowtimeService showtimeService;
+    private final SeatService seatService;
 
     @GetMapping
     public ApiResponse<List<Showtime>> getAllShowtimes() {
@@ -26,35 +29,36 @@ public class ShowtimeController {
 
     @GetMapping("/movie/{movieId}")
     public ApiResponse<List<Showtime>> getShowtimesByMovie(@PathVariable int movieId) {
-        return new ApiResponse<>(SuccessCode.FETCH_SUCCESS, showtimeService.findByMovie(null)); // Cần truyền Movie
-                                                                                                // object
+        return new ApiResponse<>(SuccessCode.FETCH_SUCCESS, showtimeService.findByMovieId(movieId));
     }
 
     @GetMapping("/cinema-hall/{cinemaHallId}")
     public ApiResponse<List<Showtime>> getShowtimesByCinemaHall(@PathVariable int cinemaHallId) {
-        return new ApiResponse<>(SuccessCode.FETCH_SUCCESS, showtimeService.findByCinemaHall(null)); // Cần truyền
-                                                                                                     // CinemaHall
-                                                                                                     // object
+        return new ApiResponse<>(SuccessCode.FETCH_SUCCESS, showtimeService.findByCinemaHallId(cinemaHallId));
     }
 
     @GetMapping("/movie/{movieId}/date/{showDate}")
     public ApiResponse<List<Showtime>> getShowtimesByMovieAndDate(
             @PathVariable int movieId,
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate showDate) {
-        return new ApiResponse<>(SuccessCode.FETCH_SUCCESS, showtimeService.findByMovieAndDate(null, showDate)); // Cần
-                                                                                                                 // truyền
-                                                                                                                 // Movie
-                                                                                                                 // object
+        return new ApiResponse<>(SuccessCode.FETCH_SUCCESS, showtimeService.findByMovieIdAndDate(movieId, showDate));
     }
 
     @GetMapping("/cinema-hall/{cinemaHallId}/date/{showDate}")
     public ApiResponse<List<Showtime>> getShowtimesByCinemaHallAndDate(
             @PathVariable int cinemaHallId,
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate showDate) {
-        return new ApiResponse<>(SuccessCode.FETCH_SUCCESS, showtimeService.findByCinemaHallAndDate(null, showDate)); // Cần
-                                                                                                                      // truyền
-                                                                                                                      // CinemaHall
-                                                                                                                      // object
+        return new ApiResponse<>(SuccessCode.FETCH_SUCCESS, showtimeService.findByCinemaHallIdAndDate(cinemaHallId, showDate));
+    }
+
+    @GetMapping("/{id}/seats")
+    public ApiResponse<List<Seat>> getSeatsByShowtime(@PathVariable int id) {
+        return new ApiResponse<>(SuccessCode.FETCH_SUCCESS, seatService.findByShowtime(id));
+    }
+
+    @GetMapping("/{id}/available-seats")
+    public ApiResponse<List<Seat>> getAvailableSeatsByShowtime(@PathVariable int id) {
+        return new ApiResponse<>(SuccessCode.FETCH_SUCCESS, seatService.findAvailableSeatsByShowtime(id));
     }
 
     @GetMapping("/{id}")

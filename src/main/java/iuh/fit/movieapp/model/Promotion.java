@@ -36,6 +36,7 @@ public class Promotion {
     private BigDecimal discountValue;
 
     @Column(name = "min_amount", precision = 10, scale = 2)
+    @Builder.Default
     private BigDecimal minAmount = BigDecimal.ZERO;
 
     @Column(name = "max_discount", precision = 10, scale = 2)
@@ -51,9 +52,11 @@ public class Promotion {
     private Integer usageLimit;
 
     @Column(name = "used_count")
-    private int usedCount = 0;
+    @Builder.Default
+    private Integer usedCount = 0;
 
     @Column(name = "is_active")
+    @Builder.Default
     private Boolean active = true;
 
     @OneToMany(mappedBy = "promotion", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

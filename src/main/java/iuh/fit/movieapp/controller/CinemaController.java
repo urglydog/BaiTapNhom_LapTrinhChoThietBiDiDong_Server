@@ -58,4 +58,13 @@ public class CinemaController {
         cinemaService.deleteCinema(id);
         return new ApiResponse<>(SuccessCode.CINEMA_DELETED, null);
     }
+
+    // Alias endpoint for frontend compatibility
+    @GetMapping("/{id}/showtimes")
+    public ApiResponse<?> getCinemaShowtimes(@PathVariable int id, @RequestParam(required = false) String date) {
+        if (date != null) {
+            return new ApiResponse<>(SuccessCode.FETCH_SUCCESS, cinemaService.getShowtimesByCinemaIdAndDate(id, date));
+        }
+        return new ApiResponse<>(SuccessCode.FETCH_SUCCESS, cinemaService.getShowtimesByCinemaId(id));
+    }
 }

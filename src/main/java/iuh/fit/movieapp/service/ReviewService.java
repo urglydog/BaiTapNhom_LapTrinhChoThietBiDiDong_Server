@@ -5,7 +5,9 @@ import iuh.fit.movieapp.dto.response.ErrorCode;
 import iuh.fit.movieapp.model.Movie;
 import iuh.fit.movieapp.model.Review;
 import iuh.fit.movieapp.model.User;
+import iuh.fit.movieapp.repository.MovieRepository;
 import iuh.fit.movieapp.repository.ReviewRepository;
+import iuh.fit.movieapp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +18,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ReviewService {
     private final ReviewRepository reviewRepo;
+    private final MovieRepository movieRepo;
+    private final UserRepository userRepo;
 
     public List<Review> findAll() {
         return reviewRepo.findAll();
@@ -25,7 +29,19 @@ public class ReviewService {
         return reviewRepo.findByMovieAndIsApprovedTrue(movie);
     }
 
+    public List<Review> findByMovieId(int movieId) {
+        Movie movie = movieRepo.findById(movieId)
+                .orElseThrow(() -> new AppException(ErrorCode.MOVIE_NOT_FOUND));
+        return reviewRepo.findByMovieAndIsApprovedTrue(movie);
+    }
+
     public List<Review> findByUser(User user) {
+        return reviewRepo.findByUser(user);
+    }
+
+    public List<Review> findByUserId(int userId) {
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         return reviewRepo.findByUser(user);
     }
 
@@ -66,7 +82,19 @@ public class ReviewService {
         return reviewRepo.findAverageRatingByMovie(movie);
     }
 
+    public Double getAverageRatingByMovieId(int movieId) {
+        Movie movie = movieRepo.findById(movieId)
+                .orElseThrow(() -> new AppException(ErrorCode.MOVIE_NOT_FOUND));
+        return reviewRepo.findAverageRatingByMovie(movie);
+    }
+
     public Long getReviewCount(Movie movie) {
+        return reviewRepo.countApprovedReviewsByMovie(movie);
+    }
+
+    public Long getReviewCountByMovieId(int movieId) {
+        Movie movie = movieRepo.findById(movieId)
+                .orElseThrow(() -> new AppException(ErrorCode.MOVIE_NOT_FOUND));
         return reviewRepo.countApprovedReviewsByMovie(movie);
     }
 }
