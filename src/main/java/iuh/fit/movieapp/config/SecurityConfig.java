@@ -37,10 +37,10 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()));
-//                .authorizeHttpRequests(auth -> auth
-//                        .requestMatchers(PUBLIC).permitAll()
-//                        .requestMatchers("/admin/**").hasRole("ADMIN")
-//                        .anyRequest().authenticated());
+        // .authorizeHttpRequests(auth -> auth
+        // .requestMatchers(PUBLIC).permitAll()
+        // .requestMatchers("/admin/**").hasRole("ADMIN")
+        // .anyRequest().authenticated());
 
         // Thêm filter JWT trước UsernamePasswordAuthenticationFilter
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
@@ -51,12 +51,16 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.addAllowedOriginPattern("*"); // Cho phép tất cả các origin
+        // Cho phép tất cả các origin (dùng pattern thay vì wildcard khi
+        // allowCredentials = true)
+        configuration.addAllowedOriginPattern("*");
         configuration.addAllowedMethod("*"); // Cho phép tất cả các HTTP methods
         configuration.addAllowedHeader("*"); // Cho phép tất cả các headers
-        configuration.setAllowCredentials(true); // Cho phép gửi credentials (cookies, auth headers)
+        // Đặt allowCredentials = false vì mobile app không cần cookies
+        // Nếu cần credentials, phải list cụ thể các origins thay vì dùng pattern "*"
+        configuration.setAllowCredentials(false);
         configuration.setMaxAge(3600L); // Cache preflight request trong 1 giờ
-        
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
