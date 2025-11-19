@@ -42,14 +42,25 @@ public class Booking {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "booking_status")
+    @Builder.Default
     private BookingStatus bookingStatus = BookingStatus.PENDING;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_status")
+    @Builder.Default
     private PaymentStatus paymentStatus = PaymentStatus.PENDING;
 
     @Column(name = "payment_method")
     private String paymentMethod;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "promotion_id")
+    @JsonBackReference
+    private Promotion promotion;
+
+    @Column(name = "discount_amount", precision = 10, scale = 2)
+    @Builder.Default
+    private BigDecimal discountAmount = BigDecimal.ZERO;
 
     @Column(name = "booking_date")
     private LocalDateTime bookingDate;

@@ -2,6 +2,91 @@
 SET NAMES utf8mb4;
 SET CHARACTER SET utf8mb4;
 
+-- =============================================
+-- Migration: Add code field to promotions table
+-- Add promotion_id and discount_amount to bookings table
+-- =============================================
+-- Migration này được tích hợp vào data.sql để chạy tự động khi Spring Boot khởi động
+-- Hibernate với ddl-auto=update sẽ tự động tạo schema, nhưng migration này đảm bảo
+-- các cột được tạo trước khi insert dữ liệu (nếu Hibernate chưa kịp tạo)
+-- 
+-- Lưu ý: Script này sử dụng PREPARE/EXECUTE để kiểm tra cột trước khi thêm,
+-- tránh lỗi nếu cột đã tồn tại (từ lần chạy trước hoặc từ Hibernate)
+
+-- Thêm cột code vào bảng promotions (chỉ khi chưa tồn tại)
+SET @sql = IF(
+    (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
+     WHERE TABLE_SCHEMA = DATABASE() 
+     AND TABLE_NAME = 'promotions' 
+     AND COLUMN_NAME = 'code') = 0,
+    'ALTER TABLE promotions ADD COLUMN code VARCHAR(20) UNIQUE AFTER id',
+    'SELECT 1'
+);
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- Cập nhật code cho các promotion cũ (nếu có)
+UPDATE promotions 
+SET code = CONCAT('PROMO', id) 
+WHERE code IS NULL OR code = '';
+
+-- Đặt code là NOT NULL (chỉ khi cột đã tồn tại và có thể null)
+SET @sql = IF(
+    (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
+     WHERE TABLE_SCHEMA = DATABASE() 
+     AND TABLE_NAME = 'promotions' 
+     AND COLUMN_NAME = 'code' 
+     AND IS_NULLABLE = 'YES') > 0,
+    'ALTER TABLE promotions MODIFY COLUMN code VARCHAR(20) NOT NULL UNIQUE',
+    'SELECT 1'
+);
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- Thêm cột promotion_id vào bookings (chỉ khi chưa tồn tại)
+SET @sql = IF(
+    (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
+     WHERE TABLE_SCHEMA = DATABASE() 
+     AND TABLE_NAME = 'bookings' 
+     AND COLUMN_NAME = 'promotion_id') = 0,
+    'ALTER TABLE bookings ADD COLUMN promotion_id INT NULL AFTER payment_method',
+    'SELECT 1'
+);
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- Thêm foreign key constraint (chỉ khi chưa tồn tại)
+SET @sql = IF(
+    (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS 
+     WHERE TABLE_SCHEMA = DATABASE() 
+     AND TABLE_NAME = 'bookings' 
+     AND CONSTRAINT_NAME = 'fk_booking_promotion') = 0,
+    'ALTER TABLE bookings ADD CONSTRAINT fk_booking_promotion FOREIGN KEY (promotion_id) REFERENCES promotions(id) ON DELETE SET NULL',
+    'SELECT 1'
+);
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- Thêm cột discount_amount vào bookings (chỉ khi chưa tồn tại)
+SET @sql = IF(
+    (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
+     WHERE TABLE_SCHEMA = DATABASE() 
+     AND TABLE_NAME = 'bookings' 
+     AND COLUMN_NAME = 'discount_amount') = 0,
+    'ALTER TABLE bookings ADD COLUMN discount_amount DECIMAL(10,2) DEFAULT 0.00 AFTER promotion_id',
+    'SELECT 1'
+);
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- =============================================
+-- Insert Users
+-- =============================================
 INSERT IGNORE INTO users (username, email, password, full_name, phone, date_of_birth, gender, role)
 VALUES ('admin', 'admin@movieticket.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi',
         'Admin System', '0123456789', '1990-01-01', 'MALE', 'ADMIN'),
@@ -43,7 +128,9 @@ VALUES (1, 'Phong 1 - IMAX', 200),
 -- =============================================
 INSERT IGNORE INTO movies (title, description, duration, release_date, end_date, genre, director, cast, rating, language,
                     subtitle, age_rating, poster_url, trailer_url)
-VALUES ('Avatar: The Way of Water',
+VALUES 
+-- Phim cũ (giữ nguyên)
+('Avatar: The Way of Water',
         'Jake Sully va gia dinh cua anh ay kham pha nhung vung bien cua Pandora va gap go nhung sinh vat bien ky la.',
         192, '2022-12-16', '2023-03-16', 'Sci-Fi, Action', 'James Cameron',
         'Sam Worthington, Zoe Saldana, Sigourney Weaver', 8.5, 'English', 'Vietnamese', 'PG-13',
@@ -132,7 +219,41 @@ VALUES ('Avatar: The Way of Water',
         'Cau be nguoi ca Luca trai nghiem mot mua he ky dieu o Riviera, Italy cung nguoi ban moi cua minh.', 95,
         '2021-06-18', '2021-12-18', 'Animation, Comedy, Family', 'Enrico Casarosa',
         'Jacob Tremblay, Jack Dylan Grazer, Emma Berman', 7.5,
-        'English', 'Vietnamese', 'PG', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1762528820/luca_gljmav.webp', 'https://www.youtube.com/watch?v=mYfJxlgR2jw');
+        'English', 'Vietnamese', 'PG', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1762528820/luca_gljmav.webp', 'https://www.youtube.com/watch?v=mYfJxlgR2jw'),
+
+-- Phim mới - Đang chiếu (releaseDate < 2025-11-19, endDate > 2025-11-19)
+('Deadpool & Wolverine', 'Deadpool và Wolverine hợp tác trong cuộc phiêu lưu đầy máu và bạo lực qua đa vũ trụ.', 127, '2025-10-15', '2025-12-15', 'Action, Comedy, Superhero', 'Shawn Levy', 'Ryan Reynolds, Hugh Jackman, Emma Corrin', 8.5, 'English', 'Vietnamese', 'R', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1763565788/deadpool-wolverine_nikxbk.webp', 'https://www.youtube.com/watch?v=example1'),
+('Gladiator 2', 'Câu chuyện tiếp theo về đấu sĩ La Mã cổ đại, cuộc chiến vì danh dự và tự do.', 158, '2025-10-20', '2025-12-20', 'Action, Drama, Historical', 'Ridley Scott', 'Paul Mescal, Denzel Washington, Pedro Pascal', 8.2, 'English', 'Vietnamese', 'R', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1763565798/gladiator-2_ngopue.webp', 'https://www.youtube.com/watch?v=example2'),
+('Beetlejuice Beetlejuice', 'Beetlejuice trở lại với những trò đùa quỷ quái và phiêu lưu siêu nhiên mới.', 115, '2025-10-25', '2025-12-25', 'Comedy, Fantasy, Horror', 'Tim Burton', 'Michael Keaton, Winona Ryder, Jenna Ortega', 7.8, 'English', 'Vietnamese', 'PG-13', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1763565786/beetlejuice-beetlejuice_ej0k3o.webp', 'https://www.youtube.com/watch?v=example3'),
+('Transformers One', 'Nguồn gốc của cuộc chiến giữa Autobots và Decepticons trên Cybertron.', 104, '2025-10-30', '2025-12-30', 'Animation, Action, Sci-Fi', 'Josh Cooley', 'Chris Hemsworth, Scarlett Johansson, Brian Tyree Henry', 7.5, 'English', 'Vietnamese', 'PG-13', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1763565716/transformers-one_yqwqy2.webp', 'https://www.youtube.com/watch?v=example4'),
+('The Wild Robot', 'Robot bị mắc kẹt trên đảo hoang phải học cách sống sót và kết bạn với động vật.', 102, '2025-11-01', '2025-12-31', 'Animation, Adventure, Family', 'Chris Sanders', 'Lupita Nyong''o, Pedro Pascal, Catherine O''Hara', 8.0, 'English', 'Vietnamese', 'PG', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1763565714/the-wild-robot_k0wbmh.webp', 'https://www.youtube.com/watch?v=example5'),
+('Wicked', 'Câu chuyện tiền truyện của The Wizard of Oz, về Elphaba và Glinda.', 142, '2025-11-05', '2025-12-25', 'Musical, Fantasy, Drama', 'Jon M. Chu', 'Ariana Grande, Cynthia Erivo, Jonathan Bailey', 8.3, 'English', 'Vietnamese', 'PG-13', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1763565716/wicked_mfg7np.webp', 'https://www.youtube.com/watch?v=example6'),
+('Moana 2', 'Moana trở lại với cuộc hành trình mới trên biển cả, khám phá những hòn đảo bí ẩn.', 107, '2025-11-08', '2025-12-28', 'Animation, Adventure, Musical', 'David G. Derrick Jr.', 'Auli''i Cravalho, Dwayne Johnson, Alan Tudyk', 8.1, 'English', 'Vietnamese', 'PG', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1763565703/moana-2_a1ixcy.webp', 'https://www.youtube.com/watch?v=example7'),
+('Mufasa: The Lion King', 'Câu chuyện về nguồn gốc của Mufasa, vị vua vĩ đại của Pride Lands.', 98, '2025-11-10', '2025-12-20', 'Animation, Adventure, Drama', 'Barry Jenkins', 'Aaron Pierre, Kelvin Harrison Jr., Seth Rogen', 7.9, 'English', 'Vietnamese', 'PG', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1763565702/mufasa-lion-king_tclwla.webp', 'https://www.youtube.com/watch?v=example8'),
+('Smile 2', 'Tiếp nối câu chuyện kinh dị về nụ cười đáng sợ lan truyền như virus.', 118, '2025-11-12', '2025-12-22', 'Horror, Thriller', 'Parker Finn', 'Naomi Scott, Kyle Gallner, Rosemarie DeWitt', 6.8, 'English', 'Vietnamese', 'R', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1763565704/smile-2_xzcyx8.webp', 'https://www.youtube.com/watch?v=example9'),
+('The Substance', 'Phim kinh dị khoa học viễn tưởng về một chất liệu bí ẩn thay đổi con người.', 131, '2025-11-15', '2025-12-15', 'Horror, Sci-Fi, Thriller', 'Coralie Fargeat', 'Demi Moore, Margaret Qualley, Dennis Quaid', 7.2, 'English', 'Vietnamese', 'R', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1763565714/the-substance_zqvstk.webp', 'https://www.youtube.com/watch?v=example10'),
+
+-- Phim mới - Sắp chiếu (releaseDate từ 2025-11-19 đến 2025-12-19)
+('Avatar 3', 'Jake Sully và gia đình tiếp tục cuộc chiến bảo vệ Pandora khỏi những mối đe dọa mới.', 195, '2025-11-19', '2026-02-19', 'Sci-Fi, Action, Adventure', 'James Cameron', 'Sam Worthington, Zoe Saldana, Sigourney Weaver', 0.0, 'English', 'Vietnamese', 'PG-13', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1763565786/avatar-3_nsx7pw.webp', 'https://www.youtube.com/watch?v=example11'),
+('Superman: Legacy', 'Câu chuyện mới về Superman, người hùng bảo vệ Trái Đất khỏi những kẻ thù siêu nhiên.', 145, '2025-11-22', '2026-01-22', 'Action, Adventure, Superhero', 'James Gunn', 'David Corenswet, Rachel Brosnahan, Nicholas Hoult', 0.0, 'English', 'Vietnamese', 'PG-13', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1763565705/superman-legacy_oszlal.webp', 'https://www.youtube.com/watch?v=example12'),
+('Thunderbolts', 'Nhóm siêu phản anh hùng hợp tác để thực hiện nhiệm vụ bí mật cho chính phủ.', 132, '2025-11-25', '2026-01-25', 'Action, Adventure, Superhero', 'Jake Schreier', 'Florence Pugh, Sebastian Stan, David Harbour', 0.0, 'English', 'Vietnamese', 'PG-13', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1763565716/thunderbolts_lexamn.webp', 'https://www.youtube.com/watch?v=example13'),
+('Blade', 'Ma cà rồng daywalker trở lại để bảo vệ nhân loại khỏi bóng tối.', 128, '2025-11-28', '2026-01-28', 'Action, Horror, Superhero', 'Yann Demange', 'Mahershala Ali, Delroy Lindo, Aaron Pierre', 0.0, 'English', 'Vietnamese', 'R', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1763565786/blade_xf5pyy.webp', 'https://www.youtube.com/watch?v=example14'),
+('Inside Out 2', 'Riley lớn lên và những cảm xúc mới xuất hiện trong tâm trí cô.', 96, '2025-12-01', '2026-02-01', 'Animation, Comedy, Family', 'Kelsey Mann', 'Amy Poehler, Maya Hawke, Ayo Edebiri', 0.0, 'English', 'Vietnamese', 'PG', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1763565702/inside-out-2_sygwnd.webp', 'https://www.youtube.com/watch?v=example15'),
+('Despicable Me 4', 'Gru và gia đình đối mặt với kẻ thù mới và những thử thách hài hước.', 88, '2025-12-05', '2026-02-05', 'Animation, Comedy, Family', 'Chris Renaud', 'Steve Carell, Kristen Wiig, Miranda Cosgrove', 0.0, 'English', 'Vietnamese', 'PG', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1763565787/despicable-me-4_rdyxjl.webp', 'https://www.youtube.com/watch?v=example16'),
+('Sonic the Hedgehog 3', 'Sonic và bạn bè chiến đấu chống lại Shadow và những mối đe dọa mới.', 102, '2025-12-08', '2026-02-08', 'Action, Adventure, Comedy', 'Jeff Fowler', 'Ben Schwartz, Idris Elba, James Marsden', 0.0, 'English', 'Vietnamese', 'PG', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1763565704/sonic-hedgehog-3_nk9arb.webp', 'https://www.youtube.com/watch?v=example17'),
+('Nosferatu', 'Bản làm lại kinh điển về ma cà rồng Nosferatu với góc nhìn hiện đại.', 134, '2025-12-10', '2026-02-10', 'Horror, Drama, Thriller', 'Robert Eggers', 'Bill Skarsgård, Lily-Rose Depp, Willem Dafoe', 0.0, 'English', 'Vietnamese', 'R', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1763565702/nosferatu_hfeo1g.webp', 'https://www.youtube.com/watch?v=example18'),
+('A Complete Unknown', 'Câu chuyện về Bob Dylan và hành trình trở thành huyền thoại âm nhạc.', 142, '2025-12-12', '2026-02-12', 'Biography, Drama, Music', 'James Mangold', 'Timothée Chalamet, Elle Fanning, Boyd Holbrook', 0.0, 'English', 'Vietnamese', 'PG-13', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1763565760/a-complete-unknown_x8yoah.webp', 'https://www.youtube.com/watch?v=example19'),
+('The Amateur', 'Một nhân viên CIA nghiệp dư phải thực hiện nhiệm vụ nguy hiểm để cứu vợ.', 118, '2025-12-15', '2026-02-15', 'Action, Thriller', 'James Hawes', 'Rami Malek, Rachel Brosnahan, Julianne Nicholson', 0.0, 'English', 'Vietnamese', 'R', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1763565705/the-amateur_bu08ff.webp', 'https://www.youtube.com/watch?v=example20'),
+('Beverly Hills Cop: Axel F', 'Axel Foley trở lại Beverly Hills để giải quyết vụ án mới đầy nguy hiểm.', 115, '2025-12-18', '2026-02-18', 'Action, Comedy, Crime', 'Mark Molloy', 'Eddie Murphy, Judge Reinhold, Kevin Bacon', 0.0, 'English', 'Vietnamese', 'R', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1763565797/everly-hills-cop-axel-f_yztr2g.webp', 'https://www.youtube.com/watch?v=example21'),
+('It Ends With Us', 'Câu chuyện tình yêu phức tạp về một phụ nữ phải đối mặt với quá khứ đau thương.', 125, '2025-12-19', '2026-02-19', 'Drama, Romance', 'Justin Baldoni', 'Blake Lively, Justin Baldoni, Jenny Slate', 0.0, 'English', 'Vietnamese', 'PG-13', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1763565702/it-ends-with-us_sw9lwc.webp', 'https://www.youtube.com/watch?v=example22'),
+('Dune: Part Three', 'Phần cuối của câu chuyện về Paul Atreides và cuộc chiến trên Arrakis.', 165, '2025-12-20', '2026-03-20', 'Sci-Fi, Adventure, Drama', 'Denis Villeneuve', 'Timothée Chalamet, Zendaya, Rebecca Ferguson', 0.0, 'English', 'Vietnamese', 'PG-13', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1763565787/dune-part-three_n0fmhi.webp', 'https://www.youtube.com/watch?v=example23'),
+('Kingdom of the Planet of the Apes', 'Câu chuyện tiếp theo về thế giới của loài khỉ thống trị Trái Đất.', 145, '2025-12-22', '2026-03-22', 'Sci-Fi, Action, Drama', 'Wes Ball', 'Owen Teague, Freya Allan, Kevin Durand', 0.0, 'English', 'Vietnamese', 'PG-13', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1763565703/kingdom-planet-apes_t2u5yj.webp', 'https://www.youtube.com/watch?v=example24'),
+('Mission: Impossible 8', 'Ethan Hunt và nhóm IMF đối mặt với nhiệm vụ bất khả thi nhất từ trước đến nay.', 158, '2025-12-25', '2026-03-25', 'Action, Adventure, Thriller', 'Christopher McQuarrie', 'Tom Cruise, Hayley Atwell, Ving Rhames', 0.0, 'English', 'Vietnamese', 'PG-13', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1763565704/mission-impossible-8_hpohxv.webp', 'https://www.youtube.com/watch?v=example25'),
+('Red One', 'Câu chuyện về ông già Noel và đặc vụ phải cứu Giáng sinh khỏi mối đe dọa.', 112, '2025-12-28', '2026-02-28', 'Action, Adventure, Comedy', 'Jake Kasdan', 'Dwayne Johnson, Chris Evans, J.K. Simmons', 0.0, 'English', 'Vietnamese', 'PG', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1763565704/red-one_s2vkxg.webp', 'https://www.youtube.com/watch?v=example26'),
+('The Strangers: Chapter 1', 'Một cặp đôi bị tấn công bởi những kẻ lạ mặt đáng sợ trong nhà nghỉ.', 91, '2025-12-30', '2026-02-28', 'Horror, Thriller', 'Renny Harlin', 'Madelaine Petsch, Froy Gutierrez, Rachel Shenton', 0.0, 'English', 'Vietnamese', 'R', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1763565705/the-strangers-chapter-1_cggm6e.webp', 'https://www.youtube.com/watch?v=example27'),
+('Lật Mặt 7: Một Điều Ước', 'Phần tiếp theo của series Lật Mặt với câu chuyện mới đầy kịch tính.', 120, '2025-11-20', '2026-01-20', 'Action, Drama, Crime', 'Lý Hải', 'Lý Hải, Hứa Vĩ Văn, Huỳnh Đông', 0.0, 'Vietnamese', 'Vietnamese', 'C18', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1763565703/lat-mat-7_aootj0.webp', 'https://www.youtube.com/watch?v=example28'),
+('Đất Rừng Phương Nam', 'Câu chuyện về cuộc sống và chiến đấu của người dân miền Nam trong thời kỳ kháng chiến.', 135, '2025-12-01', '2026-02-01', 'Drama, Historical, War', 'Nguyễn Quang Dũng', 'Huỳnh Đông, Lê Giang, NSND Trần Nhượng', 0.0, 'Vietnamese', 'Vietnamese', 'C16', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1763565787/dat-rung-phuong-nam_sn74cp.webp', 'https://www.youtube.com/watch?v=example29'),
+('Bố Già 2', 'Phần tiếp theo của Bố Già với những tình huống hài hước và cảm động mới.', 110, '2025-12-10', '2026-02-10', 'Comedy, Drama, Family', 'Vũ Ngọc Đãng', 'Trấn Thành, Lê Giang, Ngọc Giàu', 0.0, 'Vietnamese', 'Vietnamese', 'C13', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1763565788/bo-gia-2_h5prds.jpg', 'https://www.youtube.com/watch?v=example30');
 
 -- =============================================
 -- Insert Showtimes
@@ -237,9 +358,48 @@ VALUES (3, 1),
 -- =============================================
 -- Insert Promotions
 -- =============================================
-INSERT IGNORE INTO promotions (name, description, discount_type, discount_value, min_amount, max_discount, start_date, end_date, usage_limit)
-VALUES ('Chao mung khach hang moi', 'Giam 10% cho don hang dau tien', 'PERCENTAGE', 10.00, 100000, 50000, '2023-01-01 00:00:00',
-        '2023-12-31 23:59:59', 1000),
-       ('Khach hang VIP', 'Giam 20% cho khach hang VIP', 'PERCENTAGE', 20.00, 200000, 100000, '2023-01-01 00:00:00', '2023-12-31 23:59:59', 500),
-       ('Cuoi tuan vui ve', 'Giam 15% cho suat chieu cuoi tuan', 'PERCENTAGE', 15.00, 150000, 75000, '2023-01-01 00:00:00',
-        '2023-12-31 23:59:59', 200);
+INSERT IGNORE INTO promotions (code, name, description, discount_type, discount_value, min_amount, max_discount, start_date, end_date, usage_limit, is_active)
+VALUES 
+-- Promotions cũ (giữ nguyên)
+('WELCOME10', 'Chao mung khach hang moi', 'Giam 10% cho don hang dau tien', 'PERCENTAGE', 10.00, 100000, 50000, '2023-01-01 00:00:00',
+        '2023-12-31 23:59:59', 1000, TRUE),
+       ('VIP20', 'Khach hang VIP', 'Giam 20% cho khach hang VIP', 'PERCENTAGE', 20.00, 200000, 100000, '2023-01-01 00:00:00', '2023-12-31 23:59:59', 500, TRUE),
+       ('WEEKEND15', 'Cuoi tuan vui ve', 'Giam 15% cho suat chieu cuoi tuan', 'PERCENTAGE', 15.00, 150000, 75000, '2023-01-01 00:00:00',
+        '2023-12-31 23:59:59', 200, TRUE),
+
+-- Promotions mới (19/11/2025 - 19/12/2025)
+-- Khuyến mãi dài hạn (cả tháng)
+('NOV2025', 'Khuyến mãi tháng 11', 'Giảm 15% cho tất cả đơn hàng trong tháng 11', 'PERCENTAGE', 15.00, 100000, 50000, '2025-11-01 00:00:00', '2025-11-30 23:59:59', 5000, TRUE),
+('DEC2025', 'Khuyến mãi tháng 12', 'Giảm 20% cho tất cả đơn hàng trong tháng 12', 'PERCENTAGE', 20.00, 150000, 80000, '2025-12-01 00:00:00', '2025-12-31 23:59:59', 5000, TRUE),
+('NEWUSER25', 'Khách hàng mới', 'Giảm 25% cho khách hàng mới đăng ký', 'PERCENTAGE', 25.00, 200000, 100000, '2025-11-19 00:00:00', '2025-12-19 23:59:59', 1000, TRUE),
+
+-- Khuyến mãi theo tuần
+('GOLDWEEK', 'Tuần lễ vàng', 'Giảm 30% cho đơn hàng từ 300.000đ trở lên', 'PERCENTAGE', 30.00, 300000, 150000, '2025-11-19 00:00:00', '2025-11-25 23:59:59', 500, TRUE),
+('BLACKFRIDAY', 'Black Friday', 'Giảm 40% cho tất cả đơn hàng trong ngày Black Friday', 'PERCENTAGE', 40.00, 200000, 200000, '2025-11-28 00:00:00', '2025-11-28 23:59:59', 1000, TRUE),
+('WEEKEND', 'Cuối tuần vui vẻ', 'Giảm 18% cho suất chiếu cuối tuần', 'PERCENTAGE', 18.00, 150000, 90000, '2025-11-29 00:00:00', '2025-12-01 23:59:59', 800, TRUE),
+
+-- Khuyến mãi theo ngày đặc biệt
+('GRANDOPEN', 'Ngày khai trương', 'Giảm 50.000đ cho đơn hàng đầu tiên', 'FIXED_AMOUNT', 50000.00, 100000, 50000, '2025-11-19 00:00:00', '2025-11-19 23:59:59', 200, TRUE),
+('TUESDAY', 'Thứ 3 xả stress', 'Giảm 25.000đ mỗi thứ 3 hàng tuần', 'FIXED_AMOUNT', 25000.00, 80000, 25000, '2025-11-25 00:00:00', '2025-12-16 23:59:59', 1000, TRUE),
+('BIRTHDAY', 'Ngày sinh nhật', 'Giảm 35% cho khách hàng có sinh nhật trong tháng', 'PERCENTAGE', 35.00, 100000, 100000, '2025-11-19 00:00:00', '2025-12-19 23:59:59', 500, TRUE),
+
+-- Khuyến mãi theo loại phim
+('VIETNAM', 'Phim Việt Nam', 'Giảm 20.000đ cho tất cả phim Việt Nam', 'FIXED_AMOUNT', 20000.00, 50000, 20000, '2025-11-19 00:00:00', '2025-12-19 23:59:59', 2000, TRUE),
+('IMAX3D', 'Phim 3D/IMAX', 'Giảm 15% cho phim 3D và IMAX', 'PERCENTAGE', 15.00, 200000, 60000, '2025-11-19 00:00:00', '2025-12-19 23:59:59', 1500, TRUE),
+('FAMILY', 'Phim gia đình', 'Giảm 30.000đ cho phim gia đình (PG)', 'FIXED_AMOUNT', 30000.00, 100000, 30000, '2025-11-19 00:00:00', '2025-12-19 23:59:59', 1000, TRUE),
+
+-- Khuyến mãi theo thời gian
+('MORNING', 'Suất sáng', 'Giảm 30.000đ cho suất chiếu trước 12h trưa', 'FIXED_AMOUNT', 30000.00, 50000, 30000, '2025-11-19 00:00:00', '2025-12-19 23:59:59', 2000, TRUE),
+('EVENING', 'Suất tối', 'Giảm 20.000đ cho suất chiếu sau 8h tối', 'FIXED_AMOUNT', 20000.00, 100000, 20000, '2025-11-19 00:00:00', '2025-12-19 23:59:59', 1500, TRUE),
+
+-- Khuyến mãi combo
+('COMBO2', 'Combo đôi', 'Giảm 15% khi mua 2 vé trở lên', 'PERCENTAGE', 15.00, 200000, 75000, '2025-11-19 00:00:00', '2025-12-19 23:59:59', 3000, TRUE),
+('COMBO4', 'Combo gia đình', 'Giảm 25% khi mua từ 4 vé trở lên', 'PERCENTAGE', 25.00, 400000, 150000, '2025-11-19 00:00:00', '2025-12-19 23:59:59', 1000, TRUE),
+
+-- Khuyến mãi đặc biệt tháng 12
+('XMAS2025', 'Giáng sinh sớm', 'Giảm 22% cho đơn hàng từ 22/12 đến 25/12', 'PERCENTAGE', 22.00, 180000, 100000, '2025-12-22 00:00:00', '2025-12-25 23:59:59', 800, TRUE),
+('NEWYEAR2026', 'Năm mới 2026', 'Giảm 30.000đ cho đơn hàng từ 30/12 đến 2/1', 'FIXED_AMOUNT', 30000.00, 120000, 30000, '2025-12-30 00:00:00', '2026-01-02 23:59:59', 1200, TRUE),
+
+-- Khuyến mãi VIP
+('VIP30', 'Thành viên VIP', 'Giảm 30% cho thành viên VIP', 'PERCENTAGE', 30.00, 250000, 120000, '2025-11-19 00:00:00', '2025-12-19 23:59:59', 500, TRUE),
+('POINTS2X', 'Tích điểm thưởng', 'Giảm 10% + tích điểm x2 cho mọi đơn hàng', 'PERCENTAGE', 10.00, 100000, 50000, '2025-11-19 00:00:00', '2025-12-19 23:59:59', 10000, TRUE);
