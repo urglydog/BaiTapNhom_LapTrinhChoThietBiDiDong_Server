@@ -2,6 +2,7 @@ package iuh.fit.movieapp.controller;
 
 import iuh.fit.movieapp.dto.request.FavouriteRequest;
 import iuh.fit.movieapp.dto.response.ApiResponse;
+import iuh.fit.movieapp.dto.response.AppException;
 import iuh.fit.movieapp.dto.response.ErrorCode;
 import iuh.fit.movieapp.dto.response.SuccessCode;
 import iuh.fit.movieapp.model.Favourite;
@@ -31,7 +32,7 @@ public class FavouriteController {
         }
         String username = auth.getName();
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         return new ApiResponse<>(SuccessCode.FETCH_SUCCESS, favouriteService.findByUserId(user.getId()));
     }
 
@@ -43,7 +44,7 @@ public class FavouriteController {
         }
         String username = auth.getName();
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         Favourite favourite = favouriteService.createFavourite(user.getId(), request.getMovieId());
         return new ApiResponse<>(SuccessCode.FAVOURITE_CREATED, favourite);
     }
@@ -56,7 +57,7 @@ public class FavouriteController {
         }
         String username = auth.getName();
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         favouriteService.deleteFavouriteByMovieId(user.getId(), movieId);
         return new ApiResponse<>(SuccessCode.FAVOURITE_DELETED, null);
     }
