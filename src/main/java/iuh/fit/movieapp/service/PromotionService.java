@@ -100,11 +100,29 @@ public class PromotionService {
     }
 
     public Promotion createPromotion(Promotion promotion) {
+        // Kiểm tra duplicate theo code
+        if (promotion.getCode() != null && !promotion.getCode().trim().isEmpty()) {
+            Optional<Promotion> existingPromotion = promotionRepo.findByCode(promotion.getCode());
+            if (existingPromotion.isPresent()) {
+                throw new AppException(ErrorCode.PROMOTION_EXISTED);
+            }
+        }
         return promotionRepo.save(promotion);
     }
 
     public Promotion updatePromotion(Promotion promotion) {
         Promotion existedPromotion = findById(promotion.getId());
+        
+        // Kiểm tra duplicate code nếu code thay đổi
+        if (promotion.getCode() != null && !promotion.getCode().trim().isEmpty()) {
+            if (!promotion.getCode().equals(existedPromotion.getCode())) {
+                Optional<Promotion> existingPromotionWithCode = promotionRepo.findByCode(promotion.getCode());
+                if (existingPromotionWithCode.isPresent() && existingPromotionWithCode.get().getId() != promotion.getId()) {
+                    throw new AppException(ErrorCode.PROMOTION_EXISTED);
+                }
+            }
+        }
+        
         existedPromotion.setCode(promotion.getCode());
         existedPromotion.setName(promotion.getName());
         existedPromotion.setDescription(promotion.getDescription());

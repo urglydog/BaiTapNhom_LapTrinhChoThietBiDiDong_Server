@@ -52,6 +52,7 @@ public enum ErrorCode {
 
     // === PROMOTION ===
     PROMOTION_NOT_FOUND(404, "Promotion not found"),
+    PROMOTION_EXISTED(409, "Promotion already exists"),
     PROMOTION_EXPIRED(409, "Promotion has expired"),
     PROMOTION_USAGE_LIMIT_EXCEEDED(409, "Promotion usage limit exceeded"),
     PROMOTION_NOT_AVAILABLE(409, "Promotion is not available"),
