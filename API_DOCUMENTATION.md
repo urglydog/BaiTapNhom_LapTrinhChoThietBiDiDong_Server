@@ -225,7 +225,35 @@ Authorization: Bearer {token}
 
 ---
 
-### 2.3. Kiểm Tra Username Đã Tồn Tại
+### 2.3. Lấy User Theo Username
+**Endpoint:** `GET /users/username/{username}`  
+**Chức năng:** Lấy thông tin user theo username  
+**Authentication:** Cần (Bearer Token)
+
+**Response:**
+```json
+{
+  "code": 200,
+  "message": "Data fetched successfully",
+  "result": {
+    "id": 1,
+    "username": "customer1",
+    "email": "customer1@gmail.com",
+    "fullName": "Trần Thị B"
+  }
+}
+```
+
+---
+
+### 2.4. Lấy User Theo Email
+**Endpoint:** `GET /users/email/{email}`  
+**Chức năng:** Lấy thông tin user theo email  
+**Authentication:** Cần (Bearer Token)
+
+---
+
+### 2.5. Kiểm Tra Username Đã Tồn Tại
 **Endpoint:** `GET /users/check-username/{username}`  
 **Chức năng:** Kiểm tra username đã được sử dụng chưa  
 **Authentication:** Không cần
@@ -241,10 +269,47 @@ Authorization: Bearer {token}
 
 ---
 
-### 2.4. Kiểm Tra Email Đã Tồn Tại
+### 2.6. Kiểm Tra Email Đã Tồn Tại
 **Endpoint:** `GET /users/check-email/{email}`  
 **Chức năng:** Kiểm tra email đã được sử dụng chưa  
 **Authentication:** Không cần
+
+---
+
+### 2.7. Tạo User Mới
+**Endpoint:** `POST /users`  
+**Chức năng:** Tạo user mới  
+**Authentication:** Cần (Bearer Token)
+
+**Request Body:**
+```json
+{
+  "username": "newuser",
+  "email": "newuser@gmail.com",
+  "password": "password123",
+  "fullName": "Nguyễn Văn A",
+  "phone": "0123456789",
+  "dateOfBirth": "2000-01-01",
+  "gender": "MALE",
+  "role": "CUSTOMER"
+}
+```
+
+---
+
+### 2.8. Cập Nhật User
+**Endpoint:** `PUT /users/{id}`  
+**Chức năng:** Cập nhật thông tin user  
+**Authentication:** Cần (Bearer Token)
+
+**Request Body:** (Giống như tạo user)
+
+---
+
+### 2.9. Xóa User
+**Endpoint:** `DELETE /users/{id}`  
+**Chức năng:** Xóa user (chỉ ADMIN)  
+**Authentication:** Cần (Bearer Token) + Role: ADMIN
 
 ---
 
@@ -509,6 +574,22 @@ Authorization: Bearer {token}
 
 ---
 
+### 4.7. Cập Nhật Rạp
+**Endpoint:** `PUT /cinemas/{id}`  
+**Chức năng:** Cập nhật thông tin rạp (ADMIN/STAFF)  
+**Authentication:** Cần (Bearer Token) + Role: ADMIN hoặc STAFF
+
+**Request Body:** (Giống như tạo rạp)
+
+---
+
+### 4.8. Xóa Rạp
+**Endpoint:** `DELETE /cinemas/{id}`  
+**Chức năng:** Xóa rạp (ADMIN)  
+**Authentication:** Cần (Bearer Token) + Role: ADMIN
+
+---
+
 ## 5. Showtime APIs
 
 ### 5.1. Lấy Tất Cả Lịch Chiếu
@@ -541,14 +622,23 @@ Authorization: Bearer {token}
 
 ---
 
-### 5.5. Lấy Chi Tiết Lịch Chiếu
+### 5.5. Lấy Lịch Chiếu Theo Phòng Chiếu Và Ngày
+**Endpoint:** `GET /showtimes/cinema-hall/{cinemaHallId}/date/{showDate}`  
+**Chức năng:** Lấy lịch chiếu của phòng chiếu trong một ngày cụ thể  
+**Authentication:** Không cần
+
+**Example:** `GET /showtimes/cinema-hall/1/date/2024-01-15`
+
+---
+
+### 5.6. Lấy Chi Tiết Lịch Chiếu
 **Endpoint:** `GET /showtimes/{id}`  
 **Chức năng:** Lấy thông tin chi tiết của một lịch chiếu  
 **Authentication:** Không cần
 
 ---
 
-### 5.6. Lấy Danh Sách Ghế Của Suất Chiếu
+### 5.7. Lấy Danh Sách Ghế Của Suất Chiếu
 **Endpoint:** `GET /showtimes/{id}/seats`  
 **Chức năng:** Lấy danh sách tất cả ghế của một suất chiếu  
 **Authentication:** Không cần
@@ -573,14 +663,14 @@ Authorization: Bearer {token}
 
 ---
 
-### 5.7. Lấy Danh Sách Ghế Còn Trống
+### 5.8. Lấy Danh Sách Ghế Còn Trống
 **Endpoint:** `GET /showtimes/{id}/available-seats`  
 **Chức năng:** Lấy danh sách ghế còn trống của một suất chiếu  
 **Authentication:** Không cần
 
 ---
 
-### 5.8. Tạo Lịch Chiếu Mới
+### 5.9. Tạo Lịch Chiếu Mới
 **Endpoint:** `POST /showtimes`  
 **Chức năng:** Tạo lịch chiếu mới (ADMIN/STAFF)  
 **Authentication:** Cần (Bearer Token) + Role: ADMIN hoặc STAFF
@@ -599,6 +689,22 @@ Authorization: Bearer {token}
 ```
 
 **Note:** movieId và cinemaHallId cần được set thông qua Movie và CinemaHall objects trong service layer.
+
+---
+
+### 5.10. Cập Nhật Lịch Chiếu
+**Endpoint:** `PUT /showtimes/{id}`  
+**Chức năng:** Cập nhật thông tin lịch chiếu (ADMIN/STAFF)  
+**Authentication:** Cần (Bearer Token) + Role: ADMIN hoặc STAFF
+
+**Request Body:** (Giống như tạo lịch chiếu)
+
+---
+
+### 5.11. Xóa Lịch Chiếu
+**Endpoint:** `DELETE /showtimes/{id}`  
+**Chức năng:** Xóa lịch chiếu (ADMIN)  
+**Authentication:** Cần (Bearer Token) + Role: ADMIN
 
 ---
 
@@ -663,6 +769,8 @@ Authorization: Bearer {token}
       "showtimeId": 1,
       "bookingCode": "BK1705123456789",
       "totalAmount": 240000,
+      "discountAmount": 0,
+      "promotion": null,
       "bookingStatus": "CONFIRMED",
       "paymentStatus": "PAID",
       "paymentMethod": "CASH",
@@ -736,7 +844,13 @@ Authorization: Bearer {token}
     "userId": 1,
     "showtimeId": 1,
     "bookingCode": "BK1705123456789",
-    "totalAmount": 360000,
+    "totalAmount": 324000,
+    "discountAmount": 36000,
+    "promotion": {
+      "id": 1,
+      "code": "SUMMER2024",
+      "name": "Giảm giá mùa hè"
+    },
     "bookingStatus": "PENDING",
     "paymentStatus": "PENDING",
     "paymentMethod": "CASH",
@@ -744,6 +858,12 @@ Authorization: Bearer {token}
   }
 }
 ```
+
+**Lưu ý:** Nếu có `promotionCode` trong request, hệ thống sẽ tự động:
+- Validate promotion code
+- Tính toán discount amount
+- Cập nhật total amount (sau khi trừ discount)
+- Lưu promotion và discount amount vào booking
 
 ---
 
@@ -991,7 +1111,14 @@ Authorization: Bearer {token}
 
 ---
 
-### 9.6. Kiểm Tra Phim Đã Yêu Thích
+### 9.6. Xóa Yêu Thích Theo ID
+**Endpoint:** `DELETE /favourites/id/{id}`  
+**Chức năng:** Xóa yêu thích theo ID  
+**Authentication:** Cần (Bearer Token)
+
+---
+
+### 9.7. Kiểm Tra Phim Đã Yêu Thích
 **Endpoint:** `GET /favourites/user/{userId}/movie/{movieId}/check`  
 **Chức năng:** Kiểm tra phim đã được user yêu thích chưa  
 **Authentication:** Không cần
@@ -1022,6 +1149,7 @@ Authorization: Bearer {token}
   "result": [
     {
       "id": 1,
+      "code": "SUMMER2024",
       "name": "Giảm giá mùa hè",
       "description": "Giảm 20% cho tất cả vé",
       "discountType": "PERCENTAGE",
@@ -1078,6 +1206,7 @@ Authorization: Bearer {token}
 **Request Body:**
 ```json
 {
+  "code": "NEWYEAR2026",
   "name": "Giảm giá cuối năm",
   "description": "Giảm 30% cho đơn hàng trên 200,000đ",
   "discountType": "PERCENTAGE",
@@ -1091,6 +1220,8 @@ Authorization: Bearer {token}
   "active": true
 }
 ```
+
+**Lưu ý:** Field `code` là bắt buộc và phải unique
 
 **Discount Types:** `PERCENTAGE` (phần trăm), `FIXED_AMOUNT` (số tiền cố định)
 
@@ -1199,10 +1330,22 @@ curl -X POST http://localhost:8080/api/bookings \
 
 ## 📊 Tổng Kết
 
-- **Tổng số API:** ~70+ endpoints
-- **Public APIs:** ~40 endpoints (không cần authentication)
-- **Protected APIs:** ~30 endpoints (cần authentication)
-- **Admin/Staff APIs:** ~15 endpoints (cần role)
+- **Tổng số API:** ~80+ endpoints
+- **Public APIs:** ~45 endpoints (không cần authentication)
+- **Protected APIs:** ~35 endpoints (cần authentication)
+- **Admin/Staff APIs:** ~20 endpoints (cần role ADMIN hoặc STAFF)
+
+### Phân Loại API:
+- **Authentication APIs:** 6 endpoints
+- **User APIs:** 9 endpoints
+- **Movie APIs:** 12 endpoints
+- **Cinema APIs:** 8 endpoints
+- **Showtime APIs:** 11 endpoints
+- **Seat APIs:** 2 endpoints
+- **Booking APIs:** 10 endpoints
+- **Review APIs:** 10 endpoints
+- **Favourite APIs:** 7 endpoints
+- **Promotion APIs:** 8 endpoints
 
 Tất cả các API đã được test và hoạt động trơn tru! 🎉
 

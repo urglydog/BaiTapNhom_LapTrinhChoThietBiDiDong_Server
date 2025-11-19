@@ -8,10 +8,13 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface PromotionRepository extends JpaRepository<Promotion, Integer> {
     List<Promotion> findByActiveTrue();
+
+    Optional<Promotion> findByCode(String code);
 
     @Query("SELECT p FROM Promotion p WHERE p.active = true AND p.startDate <= :currentDate AND p.endDate >= :currentDate")
     List<Promotion> findActivePromotions(@Param("currentDate") LocalDateTime currentDate);

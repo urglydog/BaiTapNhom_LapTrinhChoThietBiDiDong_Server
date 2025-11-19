@@ -54,6 +54,9 @@ public enum ErrorCode {
     PROMOTION_NOT_FOUND(404, "Promotion not found"),
     PROMOTION_EXPIRED(409, "Promotion has expired"),
     PROMOTION_USAGE_LIMIT_EXCEEDED(409, "Promotion usage limit exceeded"),
+    PROMOTION_NOT_AVAILABLE(409, "Promotion is not available"),
+    PROMOTION_LIMIT_REACHED(409, "Promotion usage limit has been reached"),
+    PROMOTION_MIN_AMOUNT_NOT_MET(400, "Order amount does not meet promotion minimum requirement"),
 
     // === GENERAL ===
     TOKEN_EXPIRED(403, "Token has expired"),

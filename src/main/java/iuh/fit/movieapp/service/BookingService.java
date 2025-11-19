@@ -25,6 +25,7 @@ public class BookingService {
     private final ShowtimeRepository showtimeRepo;
     private final SeatRepository seatRepo;
     private final BookingItemRepository bookingItemRepo;
+    private final PromotionService promotionService;
 
     public List<Booking> findAll() {
         return bookingRepo.findAll();
@@ -56,7 +57,8 @@ public class BookingService {
     }
 
     @Transactional
-    public Booking createBooking(int userId, int showtimeId, List<Integer> seatIds, String paymentMethod, String promotionCode) {
+    public Booking createBooking(int userId, int showtimeId, List<Integer> seatIds, String paymentMethod,
+            String promotionCode) {
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
@@ -69,17 +71,28 @@ public class BookingService {
         // Tính tổng tiền (có thể thêm logic tính giá theo loại ghế)
         BigDecimal totalAmount = showtime.getPrice().multiply(BigDecimal.valueOf(seatIds.size()));
 
-        // TODO: Apply promotion code if provided
-        // if (promotionCode != null) {
-        //     Promotion promotion = promotionService.findByCode(promotionCode);
-        //     // Apply discount logic here
-        // }
+        // Apply promotion code if provided
+        Promotion promotion = null;
+        BigDecimal discountAmount = BigDecimal.ZERO;
+
+        if (promotionCode != null && !promotionCode.trim().isEmpty()) {
+            promotion = promotionService.validateAndGetPromotion(promotionCode, totalAmount);
+            discountAmount = promotionService.calculateDiscount(promotion, totalAmount);
+            totalAmount = totalAmount.subtract(discountAmount);
+
+            // Đảm bảo tổng tiền không âm
+            if (totalAmount.compareTo(BigDecimal.ZERO) < 0) {
+                totalAmount = BigDecimal.ZERO;
+            }
+        }
 
         Booking booking = Booking.builder()
                 .user(user)
                 .showtime(showtime)
                 .bookingCode(bookingCode)
                 .totalAmount(totalAmount)
+                .promotion(promotion)
+                .discountAmount(discountAmount)
                 .bookingStatus(Booking.BookingStatus.PENDING)
                 .paymentStatus(Booking.PaymentStatus.PENDING)
                 .paymentMethod(paymentMethod)
@@ -93,17 +106,17 @@ public class BookingService {
         for (Integer seatId : seatIds) {
             Seat seat = seatRepo.findById(seatId)
                     .orElseThrow(() -> new AppException(ErrorCode.SEAT_NOT_FOUND));
-            
+
             // Kiểm tra ghế đã được đặt chưa
             List<BookingItem> existingItems = bookingItemRepo.findBySeat(seat);
             boolean isBooked = existingItems.stream()
                     .anyMatch(item -> {
                         Booking b = item.getBooking();
                         return (b.getShowtime().getId() == showtimeId) &&
-                               (b.getBookingStatus() == Booking.BookingStatus.PENDING ||
-                                b.getBookingStatus() == Booking.BookingStatus.CONFIRMED);
+                                (b.getBookingStatus() == Booking.BookingStatus.PENDING ||
+                                        b.getBookingStatus() == Booking.BookingStatus.CONFIRMED);
                     });
-            
+
             if (isBooked) {
                 throw new AppException(ErrorCode.SEAT_ALREADY_BOOKED);
             }
@@ -117,6 +130,11 @@ public class BookingService {
         }
 
         bookingItemRepo.saveAll(bookingItems);
+
+        // Tăng số lần sử dụng promotion nếu có
+        if (promotion != null) {
+            promotionService.incrementUsedCount(promotion);
+        }
 
         return booking;
     }
