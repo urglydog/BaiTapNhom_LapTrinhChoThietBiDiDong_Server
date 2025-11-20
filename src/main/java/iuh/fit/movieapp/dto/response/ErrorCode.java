@@ -63,7 +63,12 @@ public enum ErrorCode {
     TOKEN_EXPIRED(403, "Token has expired"),
     UNAUTHORIZED(401, "Unauthorized access"),
     FORBIDDEN(403, "Access forbidden"),
-    UNKNOWN_ERROR(500, "Something went wrong");
+    UNKNOWN_ERROR(500, "Something went wrong"),
+
+//    === OTP ===
+    OTP_INVALID_OR_EXPIRED(403, "Invalid Otp  or Otp has expired"),
+    INVALID_REQUEST(400, "Invalid request"),
+    ;
 
     private final int code;
     private final String message;

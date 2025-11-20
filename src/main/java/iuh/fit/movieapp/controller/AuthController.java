@@ -11,7 +11,10 @@ import iuh.fit.movieapp.model.Role;
 import iuh.fit.movieapp.model.User;
 import iuh.fit.movieapp.repository.UserRepository;
 import iuh.fit.movieapp.security.UserDetail;
+import iuh.fit.movieapp.service.MailService;
+import iuh.fit.movieapp.service.OtpService;
 import iuh.fit.movieapp.util.JwtUtil;
+import jakarta.mail.MessagingException;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -29,17 +32,11 @@ import java.util.Map;
 @RequestMapping("/api/auth")
 @AllArgsConstructor
 public class AuthController {
-
-    @Autowired
+    private final OtpService otpService;
+    private final MailService mailService;
     private AuthenticationManager authenticationManager;
-
-    @Autowired
     private UserRepository userRepository;
-
-    @Autowired
     private PasswordEncoder passwordEncoder;
-
-    @Autowired
     private JwtUtil jwtUtil;
 
     @PostMapping("/login")
@@ -68,6 +65,62 @@ public class AuthController {
         } catch (Exception e) {
             return new ApiResponse<>(ErrorCode.USER_NOT_FOUND);
         }
+    }
+
+    // ================= Get OTP ============
+    @PostMapping("/send-otp")
+    public ApiResponse<?> sendOtp(@RequestParam String email, @RequestParam(defaultValue = "REGISTER") String type) throws MessagingException {
+        if ("REGISTER".equals(type)) {
+            // For registration, email should NOT exist
+            if (userRepository.existsByEmail(email)) {
+                return new ApiResponse<>(ErrorCode.EMAIL_EXISTED);
+            }
+        } else if ("RESET_PASSWORD".equals(type)) {
+            // For password reset, email MUST exist
+            if (!userRepository.existsByEmail(email)) {
+                return new ApiResponse<>(ErrorCode.USER_NOT_FOUND);
+            }
+        }
+
+        String otp = otpService.generateOtp(email);
+        mailService.sendOtpMail(email);
+        return new ApiResponse<>(SuccessCode.OTP_SENT, email);
+    }
+
+    // ================= Send OTP for Registration ============
+    @PostMapping("/send-otp-register")
+    public ApiResponse<?> sendOtpForRegister(@RequestParam String email) throws MessagingException {
+        // For registration, email should NOT exist
+        if (userRepository.existsByEmail(email)) {
+            return new ApiResponse<>(ErrorCode.EMAIL_EXISTED);
+        }
+
+        String otp = otpService.generateOtp(email);
+        mailService.sendOtpMail(email);
+        return new ApiResponse<>(SuccessCode.OTP_SENT, email);
+    }
+
+    // ================= Send OTP for Password Reset ============
+    @PostMapping("/send-otp-reset")
+    public ApiResponse<?> sendOtpForReset(@RequestParam String email) throws MessagingException {
+        // For password reset, email MUST exist
+        if (!userRepository.existsByEmail(email)) {
+            return new ApiResponse<>(ErrorCode.USER_NOT_FOUND);
+        }
+
+        String otp = otpService.generateOtp(email);
+        mailService.sendOtpMail(email);
+        return new ApiResponse<>(SuccessCode.OTP_SENT, email);
+    }
+
+    // Bước 2: Xác thực OTP
+    @PostMapping("/verify-otp")
+    public ApiResponse<?> verifyOtp(@RequestParam String email, @RequestParam String otp) {
+        boolean valid = otpService.verifyOtp(email, otp);
+        if (!valid) {
+            return new ApiResponse<>(ErrorCode.OTP_INVALID_OR_EXPIRED);
+        }
+        return new ApiResponse<>(SuccessCode.OTP_VERIFIED_SUCCESSFULLY, email);
     }
 
     // ================= REGISTER =================
@@ -110,6 +163,30 @@ public class AuthController {
 
         // Mã hóa mật khẩu mới
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        return new ApiResponse<>(SuccessCode.RESET_PASSWORD_SUCCESSFULLY, user);
+    }
+
+    // ================= RESET PASSWORD BY EMAIL =================
+    @PostMapping("/reset-password-email")
+    public ApiResponse<?> resetPasswordByEmail(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        String newPassword = request.get("newPassword");
+
+        if (email == null || newPassword == null) {
+            return new ApiResponse<>(ErrorCode.INVALID_REQUEST);
+        }
+
+        User user = userRepository.findByEmail(email)
+                .orElse(null);
+
+        if (user == null) {
+            return new ApiResponse<>(ErrorCode.USER_NOT_FOUND);
+        }
+
+        // Mã hóa mật khẩu mới
+        user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
 
         return new ApiResponse<>(SuccessCode.RESET_PASSWORD_SUCCESSFULLY, user);
