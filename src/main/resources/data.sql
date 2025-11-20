@@ -256,6 +256,44 @@ VALUES
 ('Bố Già 2', 'Phần tiếp theo của Bố Già với những tình huống hài hước và cảm động mới.', 110, '2025-12-10', '2026-02-10', 'Comedy, Drama, Family', 'Vũ Ngọc Đãng', 'Trấn Thành, Lê Giang, Ngọc Giàu', 0.0, 'Vietnamese', 'Vietnamese', 'C13', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1763565788/bo-gia-2_h5prds.jpg', 'https://www.youtube.com/watch?v=example30', TRUE);
 
 -- =============================================
+-- Update is_active cho các phim hiện có (nếu chưa được set)
+-- =============================================
+-- Cập nhật phim cũ (end_date < 2025-11-19) thành inactive
+UPDATE movies 
+SET is_active = FALSE 
+WHERE is_active IS NULL
+  AND (
+    (end_date IS NOT NULL AND end_date < '2025-11-19') 
+    OR (end_date IS NULL AND release_date < '2023-01-01')
+  );
+
+-- Cập nhật phim đang chiếu (release_date <= 2025-11-19 và end_date >= 2025-11-19) thành active
+UPDATE movies 
+SET is_active = TRUE 
+WHERE is_active IS NULL
+  AND release_date <= '2025-11-19' 
+  AND (end_date IS NULL OR end_date >= '2025-11-19');
+
+-- Cập nhật phim sắp chiếu (release_date > 2025-11-19) thành active
+UPDATE movies 
+SET is_active = TRUE 
+WHERE is_active IS NULL
+  AND release_date > '2025-11-19';
+
+-- Đảm bảo tất cả phim có is_active (nếu vẫn còn null, set mặc định là TRUE)
+UPDATE movies 
+SET is_active = TRUE 
+WHERE is_active IS NULL;
+
+-- =============================================
+-- Update is_active cho các showtimes hiện có
+-- =============================================
+-- Set active = TRUE cho tất cả showtimes (vì showtimes đã được tạo với ngày trong tương lai)
+UPDATE showtimes 
+SET is_active = TRUE 
+WHERE is_active IS NULL;
+
+-- =============================================
 -- Insert Showtimes
 -- =============================================
 -- Showtimes cho phim mới (đang chiếu và sắp chiếu) - Tháng 11-12/2025
