@@ -35,6 +35,9 @@ public class Seat {
     @Builder.Default
     private SeatType seatType = SeatType.NORMAL;
 
+    @Column(name = "base_price", precision = 10, scale = 2)
+    private java.math.BigDecimal basePrice;
+
     @Column(name = "is_active")
     @Builder.Default
     private Boolean active = true;

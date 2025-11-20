@@ -87,7 +87,6 @@ CREATE TABLE showtimes (
     show_date DATE NOT NULL,
     start_time TIME NOT NULL,
     end_time TIME NOT NULL,
-    price DECIMAL(10,2) NOT NULL,
     is_active BOOLEAN DEFAULT TRUE,
     FOREIGN KEY (movie_id) REFERENCES movies(id),
     FOREIGN KEY (cinema_hall_id) REFERENCES cinema_halls(id)
@@ -102,6 +101,7 @@ CREATE TABLE seats (
     seat_number VARCHAR(10) NOT NULL,
     seat_row VARCHAR(5) NOT NULL,
     seat_type VARCHAR(10) DEFAULT 'NORMAL' CHECK (seat_type IN ('NORMAL', 'VIP', 'COUPLE')),
+    base_price DECIMAL(10,2) DEFAULT 100000.00,
     is_active BOOLEAN DEFAULT TRUE,
     FOREIGN KEY (cinema_hall_id) REFERENCES cinema_halls(id),
     UNIQUE (cinema_hall_id, seat_number)
@@ -115,6 +115,7 @@ CREATE TABLE bookings (
     user_id INT NOT NULL,
     showtime_id INT NOT NULL,
     booking_code VARCHAR(20) NOT NULL UNIQUE,
+    qr_code VARCHAR(255) UNIQUE,
     total_amount DECIMAL(10,2) NOT NULL,
     booking_status VARCHAR(20) DEFAULT 'PENDING' CHECK (booking_status IN ('PENDING', 'CONFIRMED', 'CANCELLED', 'COMPLETED')),
     payment_status VARCHAR(20) DEFAULT 'PENDING' CHECK (payment_status IN ('PENDING', 'PAID', 'FAILED', 'REFUNDED')),

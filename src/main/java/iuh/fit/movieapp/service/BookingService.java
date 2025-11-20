@@ -67,9 +67,61 @@ public class BookingService {
 
         // Tạo booking code unique
         String bookingCode = "BK" + System.currentTimeMillis();
+        
+        // Tạo QR code
+        String qrCode = "QR-" + bookingCode + "-" + 
+                      java.util.UUID.randomUUID().toString().substring(0, 9).toUpperCase();
 
-        // Tính tổng tiền (có thể thêm logic tính giá theo loại ghế)
-        BigDecimal totalAmount = showtime.getPrice().multiply(BigDecimal.valueOf(seatIds.size()));
+        // Tính tổng tiền dựa trên giá ghế (base_price từ seat)
+        BigDecimal totalAmount = BigDecimal.ZERO;
+        List<BookingItem> bookingItems = new ArrayList<>();
+        
+        for (Integer seatId : seatIds) {
+            Seat seat = seatRepo.findById(seatId)
+                    .orElseThrow(() -> new AppException(ErrorCode.SEAT_NOT_FOUND));
+
+            // Kiểm tra ghế đã được đặt chưa
+            List<BookingItem> existingItems = bookingItemRepo.findBySeat(seat);
+            boolean isBooked = existingItems.stream()
+                    .anyMatch(item -> {
+                        Booking b = item.getBooking();
+                        return (b.getShowtime().getId() == showtimeId) &&
+                                (b.getBookingStatus() == Booking.BookingStatus.PENDING ||
+                                        b.getBookingStatus() == Booking.BookingStatus.CONFIRMED);
+                    });
+
+            if (isBooked) {
+                throw new AppException(ErrorCode.SEAT_ALREADY_BOOKED);
+            }
+
+            // Lấy giá từ seat (base_price), nếu không có thì dùng giá mặc định theo loại ghế
+            BigDecimal seatPrice;
+            if (seat.getBasePrice() != null && seat.getBasePrice().compareTo(BigDecimal.ZERO) > 0) {
+                seatPrice = seat.getBasePrice();
+            } else {
+                // Giá mặc định theo loại ghế
+                switch (seat.getSeatType()) {
+                    case VIP:
+                        seatPrice = new BigDecimal("150000");
+                        break;
+                    case COUPLE:
+                        seatPrice = new BigDecimal("200000");
+                        break;
+                    case NORMAL:
+                    default:
+                        seatPrice = new BigDecimal("100000");
+                        break;
+                }
+            }
+
+            BookingItem bookingItem = BookingItem.builder()
+                    .booking(null) // Sẽ set sau khi booking được tạo
+                    .seat(seat)
+                    .price(seatPrice)
+                    .build();
+            bookingItems.add(bookingItem);
+            totalAmount = totalAmount.add(seatPrice);
+        }
 
         // Apply promotion code if provided
         Promotion promotion = null;
@@ -90,6 +142,7 @@ public class BookingService {
                 .user(user)
                 .showtime(showtime)
                 .bookingCode(bookingCode)
+                .qrCode(qrCode)
                 .totalAmount(totalAmount)
                 .promotion(promotion)
                 .discountAmount(discountAmount)
@@ -101,34 +154,10 @@ public class BookingService {
 
         booking = bookingRepo.save(booking);
 
-        // Tạo BookingItem cho mỗi ghế
-        List<BookingItem> bookingItems = new ArrayList<>();
-        for (Integer seatId : seatIds) {
-            Seat seat = seatRepo.findById(seatId)
-                    .orElseThrow(() -> new AppException(ErrorCode.SEAT_NOT_FOUND));
-
-            // Kiểm tra ghế đã được đặt chưa
-            List<BookingItem> existingItems = bookingItemRepo.findBySeat(seat);
-            boolean isBooked = existingItems.stream()
-                    .anyMatch(item -> {
-                        Booking b = item.getBooking();
-                        return (b.getShowtime().getId() == showtimeId) &&
-                                (b.getBookingStatus() == Booking.BookingStatus.PENDING ||
-                                        b.getBookingStatus() == Booking.BookingStatus.CONFIRMED);
-                    });
-
-            if (isBooked) {
-                throw new AppException(ErrorCode.SEAT_ALREADY_BOOKED);
-            }
-
-            BookingItem bookingItem = BookingItem.builder()
-                    .booking(booking)
-                    .seat(seat)
-                    .price(showtime.getPrice())
-                    .build();
-            bookingItems.add(bookingItem);
+        // Set booking cho các booking items và lưu
+        for (BookingItem item : bookingItems) {
+            item.setBooking(booking);
         }
-
         bookingItemRepo.saveAll(bookingItems);
 
         // Tăng số lần sử dụng promotion nếu có

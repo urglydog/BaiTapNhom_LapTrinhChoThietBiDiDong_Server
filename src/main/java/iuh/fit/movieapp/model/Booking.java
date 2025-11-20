@@ -37,6 +37,9 @@ public class Booking {
     @Column(name = "booking_code", nullable = false, unique = true)
     private String bookingCode;
 
+    @Column(name = "qr_code", unique = true)
+    private String qrCode;
+
     @Column(name = "total_amount", nullable = false, precision = 10, scale = 2)
     private BigDecimal totalAmount;
 
