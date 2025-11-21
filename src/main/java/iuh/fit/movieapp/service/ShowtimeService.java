@@ -81,7 +81,6 @@ public class ShowtimeService {
         existedShowtime.setShowDate(showtime.getShowDate());
         existedShowtime.setStartTime(showtime.getStartTime());
         existedShowtime.setEndTime(showtime.getEndTime());
-        existedShowtime.setPrice(showtime.getPrice());
         return showtimeRepo.save(existedShowtime);
     }
 

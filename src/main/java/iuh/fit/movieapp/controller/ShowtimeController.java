@@ -61,6 +61,11 @@ public class ShowtimeController {
         return new ApiResponse<>(SuccessCode.FETCH_SUCCESS, seatService.findAvailableSeatsByShowtime(id));
     }
 
+    @GetMapping("/{id}/booked-seats")
+    public ApiResponse<List<Seat>> getBookedSeatsByShowtime(@PathVariable int id) {
+        return new ApiResponse<>(SuccessCode.FETCH_SUCCESS, seatService.findBookedSeatsByShowtime(id));
+    }
+
     @GetMapping("/{id}")
     public ApiResponse<Showtime> getShowtime(@PathVariable int id) {
         return new ApiResponse<>(SuccessCode.FETCH_SUCCESS, showtimeService.findById(id));
