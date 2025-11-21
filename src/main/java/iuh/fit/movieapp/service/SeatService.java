@@ -74,5 +74,30 @@ public class SeatService {
         return seatRepo.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.SEAT_NOT_FOUND));
     }
+
+    /**
+     * Fix duplicate seats by:
+     * 1. Updating booking_items to point to the seat with minimum id in each duplicate group
+     * 2. Deleting duplicate seats (keeping only the one with minimum id)
+     * @return Number of duplicate seats deleted
+     */
+    @org.springframework.transaction.annotation.Transactional
+    public int fixDuplicateSeats() {
+        // First, update booking_items to point to the correct seat
+        int updatedBookingItems = seatRepo.updateBookingItemsForDuplicateSeats();
+        
+        // Then, delete duplicate seats
+        int deletedSeats = seatRepo.deleteDuplicateSeats();
+        
+        return deletedSeats;
+    }
+
+    /**
+     * Get information about duplicate seats
+     * @return List of duplicate seat information [cinema_hall_id, seat_number, count]
+     */
+    public List<Object[]> getDuplicateSeatsInfo() {
+        return seatRepo.findDuplicateSeats();
+    }
 }
 

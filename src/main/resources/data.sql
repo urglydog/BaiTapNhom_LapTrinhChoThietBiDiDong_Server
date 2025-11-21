@@ -804,9 +804,10 @@ UPDATE showtimes SET is_active = TRUE WHERE is_active IS NULL;
 -- =============================================
 -- Insert Seats (tạo ghế cho tất cả các phòng chiếu)
 -- =============================================
+-- CHỈ TẠO GHẾ KHI CHƯA CÓ GHẾ NÀO CHO PHÒNG ĐÓ (tránh duplicate khi restart)
 -- Sử dụng recursive CTE để tạo ghế (MySQL 8.0+ / MariaDB 10.2+)
 -- Phòng 1 - IMAX (200 ghế): 10 hàng x 20 ghế, hàng C-D là VIP
-INSERT IGNORE INTO seats (cinema_hall_id, seat_number, seat_row, seat_type)
+INSERT INTO seats (cinema_hall_id, seat_number, seat_row, seat_type)
 WITH RECURSIVE row_numbers AS (
     SELECT 1 as row_num
     UNION ALL
@@ -819,10 +820,15 @@ seat_numbers AS (
 )
 SELECT 1, CONCAT(CHAR(ASCII('A') + row_num - 1), seat_num), CHAR(ASCII('A') + row_num - 1),
        CASE WHEN row_num BETWEEN 3 AND 4 THEN 'VIP' ELSE 'NORMAL' END
-FROM row_numbers CROSS JOIN seat_numbers;
+FROM row_numbers CROSS JOIN seat_numbers
+WHERE NOT EXISTS (
+    SELECT 1 FROM seats s 
+    WHERE s.cinema_hall_id = 1 
+    AND s.seat_number = CONCAT(CHAR(ASCII('A') + row_num - 1), seat_num)
+);
 
 -- Phòng 2 - Standard (150 ghế): 10 hàng x 15 ghế, hàng C-D là VIP
-INSERT IGNORE INTO seats (cinema_hall_id, seat_number, seat_row, seat_type)
+INSERT INTO seats (cinema_hall_id, seat_number, seat_row, seat_type)
 WITH RECURSIVE row_numbers AS (
     SELECT 1 as row_num
     UNION ALL
@@ -835,10 +841,15 @@ seat_numbers AS (
 )
 SELECT 2, CONCAT(CHAR(ASCII('A') + row_num - 1), seat_num), CHAR(ASCII('A') + row_num - 1),
        CASE WHEN row_num BETWEEN 3 AND 4 THEN 'VIP' ELSE 'NORMAL' END
-FROM row_numbers CROSS JOIN seat_numbers;
+FROM row_numbers CROSS JOIN seat_numbers
+WHERE NOT EXISTS (
+    SELECT 1 FROM seats s 
+    WHERE s.cinema_hall_id = 2 
+    AND s.seat_number = CONCAT(CHAR(ASCII('A') + row_num - 1), seat_num)
+);
 
 -- Phòng 3 - VIP (100 ghế): 8 hàng x 12-13 ghế, tất cả VIP
-INSERT IGNORE INTO seats (cinema_hall_id, seat_number, seat_row, seat_type)
+INSERT INTO seats (cinema_hall_id, seat_number, seat_row, seat_type)
 WITH RECURSIVE row_numbers AS (
     SELECT 1 as row_num
     UNION ALL
@@ -851,10 +862,15 @@ seat_numbers AS (
 )
 SELECT 3, CONCAT(CHAR(ASCII('A') + row_num - 1), seat_num), CHAR(ASCII('A') + row_num - 1), 'VIP'
 FROM row_numbers CROSS JOIN seat_numbers
-WHERE NOT (row_num IN (1, 8) AND seat_num > 12);
+WHERE NOT (row_num IN (1, 8) AND seat_num > 12)
+AND NOT EXISTS (
+    SELECT 1 FROM seats s 
+    WHERE s.cinema_hall_id = 3 
+    AND s.seat_number = CONCAT(CHAR(ASCII('A') + row_num - 1), seat_num)
+);
 
 -- Phòng 4 - Standard (180 ghế): 12 hàng x 15 ghế, hàng D-F là VIP
-INSERT IGNORE INTO seats (cinema_hall_id, seat_number, seat_row, seat_type)
+INSERT INTO seats (cinema_hall_id, seat_number, seat_row, seat_type)
 WITH RECURSIVE row_numbers AS (
     SELECT 1 as row_num
     UNION ALL
@@ -867,10 +883,15 @@ seat_numbers AS (
 )
 SELECT 4, CONCAT(CHAR(ASCII('A') + row_num - 1), seat_num), CHAR(ASCII('A') + row_num - 1),
        CASE WHEN row_num BETWEEN 4 AND 6 THEN 'VIP' ELSE 'NORMAL' END
-FROM row_numbers CROSS JOIN seat_numbers;
+FROM row_numbers CROSS JOIN seat_numbers
+WHERE NOT EXISTS (
+    SELECT 1 FROM seats s 
+    WHERE s.cinema_hall_id = 4 
+    AND s.seat_number = CONCAT(CHAR(ASCII('A') + row_num - 1), seat_num)
+);
 
 -- Phòng 5 - VIP (80 ghế): 8 hàng x 10 ghế, tất cả VIP
-INSERT IGNORE INTO seats (cinema_hall_id, seat_number, seat_row, seat_type)
+INSERT INTO seats (cinema_hall_id, seat_number, seat_row, seat_type)
 WITH RECURSIVE row_numbers AS (
     SELECT 1 as row_num
     UNION ALL
@@ -882,10 +903,15 @@ seat_numbers AS (
     SELECT seat_num + 1 FROM seat_numbers WHERE seat_num < 10
 )
 SELECT 5, CONCAT(CHAR(ASCII('A') + row_num - 1), seat_num), CHAR(ASCII('A') + row_num - 1), 'VIP'
-FROM row_numbers CROSS JOIN seat_numbers;
+FROM row_numbers CROSS JOIN seat_numbers
+WHERE NOT EXISTS (
+    SELECT 1 FROM seats s 
+    WHERE s.cinema_hall_id = 5 
+    AND s.seat_number = CONCAT(CHAR(ASCII('A') + row_num - 1), seat_num)
+);
 
 -- Phòng 6 - Standard (160 ghế): 10 hàng x 16 ghế, hàng D-E là VIP
-INSERT IGNORE INTO seats (cinema_hall_id, seat_number, seat_row, seat_type)
+INSERT INTO seats (cinema_hall_id, seat_number, seat_row, seat_type)
 WITH RECURSIVE row_numbers AS (
     SELECT 1 as row_num
     UNION ALL
@@ -898,10 +924,15 @@ seat_numbers AS (
 )
 SELECT 6, CONCAT(CHAR(ASCII('A') + row_num - 1), seat_num), CHAR(ASCII('A') + row_num - 1),
        CASE WHEN row_num BETWEEN 4 AND 5 THEN 'VIP' ELSE 'NORMAL' END
-FROM row_numbers CROSS JOIN seat_numbers;
+FROM row_numbers CROSS JOIN seat_numbers
+WHERE NOT EXISTS (
+    SELECT 1 FROM seats s 
+    WHERE s.cinema_hall_id = 6 
+    AND s.seat_number = CONCAT(CHAR(ASCII('A') + row_num - 1), seat_num)
+);
 
 -- Phòng 7 - Standard (140 ghế): 10 hàng x 14 ghế, hàng D-E là VIP
-INSERT IGNORE INTO seats (cinema_hall_id, seat_number, seat_row, seat_type)
+INSERT INTO seats (cinema_hall_id, seat_number, seat_row, seat_type)
 WITH RECURSIVE row_numbers AS (
     SELECT 1 as row_num
     UNION ALL
@@ -914,10 +945,15 @@ seat_numbers AS (
 )
 SELECT 7, CONCAT(CHAR(ASCII('A') + row_num - 1), seat_num), CHAR(ASCII('A') + row_num - 1),
        CASE WHEN row_num BETWEEN 4 AND 5 THEN 'VIP' ELSE 'NORMAL' END
-FROM row_numbers CROSS JOIN seat_numbers;
+FROM row_numbers CROSS JOIN seat_numbers
+WHERE NOT EXISTS (
+    SELECT 1 FROM seats s 
+    WHERE s.cinema_hall_id = 7 
+    AND s.seat_number = CONCAT(CHAR(ASCII('A') + row_num - 1), seat_num)
+);
 
 -- Phòng 8 - 4DX (120 ghế): 8 hàng x 15 ghế, hàng C-E là VIP
-INSERT IGNORE INTO seats (cinema_hall_id, seat_number, seat_row, seat_type)
+INSERT INTO seats (cinema_hall_id, seat_number, seat_row, seat_type)
 WITH RECURSIVE row_numbers AS (
     SELECT 1 as row_num
     UNION ALL
@@ -930,7 +966,12 @@ seat_numbers AS (
 )
 SELECT 8, CONCAT(CHAR(ASCII('A') + row_num - 1), seat_num), CHAR(ASCII('A') + row_num - 1),
        CASE WHEN row_num BETWEEN 3 AND 5 THEN 'VIP' ELSE 'NORMAL' END
-FROM row_numbers CROSS JOIN seat_numbers;
+FROM row_numbers CROSS JOIN seat_numbers
+WHERE NOT EXISTS (
+    SELECT 1 FROM seats s 
+    WHERE s.cinema_hall_id = 8 
+    AND s.seat_number = CONCAT(CHAR(ASCII('A') + row_num - 1), seat_num)
+);
 
 -- =============================================
 -- Insert Bookings và Booking Items

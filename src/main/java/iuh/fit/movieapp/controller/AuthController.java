@@ -169,4 +169,38 @@ public class AuthController {
             return new ApiResponse<>(ErrorCode.UNAUTHORIZED);
         }
     }
+
+    // ================= INIT ADMIN (Tạm thời - chỉ dùng để setup) =================
+    @PostMapping("/init-admin")
+    public ApiResponse<?> initAdmin() {
+        try {
+            // Kiểm tra xem admin đã tồn tại chưa
+            User existingAdmin = userRepository.findByUsername("admin").orElse(null);
+            
+            if (existingAdmin != null) {
+                // Nếu đã tồn tại, reset password về "password"
+                existingAdmin.setPassword(passwordEncoder.encode("password"));
+                existingAdmin.setActive(true);
+                userRepository.save(existingAdmin);
+                return new ApiResponse<>(SuccessCode.RESET_PASSWORD_SUCCESSFULLY, 
+                    "Admin user đã tồn tại. Đã reset password về 'password'");
+            } else {
+                // Nếu chưa tồn tại, tạo mới
+                User admin = User.builder()
+                        .username("admin")
+                        .email("admin@movieticket.com")
+                        .password(passwordEncoder.encode("password"))
+                        .fullName("Admin System")
+                        .phone("0123456789")
+                        .role(Role.ADMIN)
+                        .active(true)
+                        .build();
+                userRepository.save(admin);
+                return new ApiResponse<>(SuccessCode.USER_CREATED, 
+                    "Đã tạo admin user mới. Username: admin, Password: password");
+            }
+        } catch (Exception e) {
+            return new ApiResponse<>(ErrorCode.UNKNOWN_ERROR);
+        }
+    }
 }
