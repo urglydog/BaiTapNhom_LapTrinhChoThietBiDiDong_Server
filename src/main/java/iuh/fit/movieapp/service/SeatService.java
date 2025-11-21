@@ -55,6 +55,21 @@ public class SeatService {
                 .collect(Collectors.toList());
     }
 
+    public List<Seat> findBookedSeatsByShowtime(int showtimeId) {
+        Showtime showtime = showtimeRepo.findById(showtimeId)
+                .orElseThrow(() -> new AppException(ErrorCode.SHOWTIME_NOT_FOUND));
+        
+        // Lấy danh sách seat IDs đã được đặt cho showtime này (sử dụng query trực tiếp để tránh proxy issues)
+        List<Integer> bookedSeatIds = bookingItemRepo.findBookedSeatIdsByShowtimeId(showtimeId);
+        
+        // Query lại từ seatRepo để tránh Hibernate proxy issues
+        if (bookedSeatIds.isEmpty()) {
+            return List.of();
+        }
+        
+        return seatRepo.findAllById(bookedSeatIds);
+    }
+
     public Seat findById(int id) {
         return seatRepo.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.SEAT_NOT_FOUND));
