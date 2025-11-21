@@ -300,6 +300,26 @@ VALUES
 ('Bố Già 2', 'Phần tiếp theo của Bố Già với những tình huống hài hước và cảm động mới.', 110, '2025-12-10', '2026-02-10', 'Comedy, Drama, Family', 'Vũ Ngọc Đãng', 'Trấn Thành, Lê Giang, Ngọc Giàu', 0.0, 'Vietnamese', 'Vietnamese', 'C13', 'https://res.cloudinary.com/dq2xy9j7j/image/upload/v1763565788/bo-gia-2_h5prds.jpg', 'https://www.youtube.com/watch?v=example30', TRUE);
 
 -- =============================================
+-- Fix null values cho các bảng
+-- =============================================
+-- Cập nhật is_active cho cinemas
+UPDATE cinemas SET is_active = TRUE WHERE is_active IS NULL;
+
+-- Cập nhật is_active và seat_layout cho cinema_halls
+UPDATE cinema_halls SET is_active = TRUE WHERE is_active IS NULL;
+-- Tạo seat_layout JSON cơ bản cho các cinema_halls (nếu null)
+UPDATE cinema_halls SET seat_layout = JSON_OBJECT('rows', total_seats DIV 20, 'seatsPerRow', 20) WHERE seat_layout IS NULL AND total_seats > 0;
+
+-- Cập nhật is_active và base_price cho seats
+UPDATE seats SET is_active = TRUE WHERE is_active IS NULL;
+UPDATE seats SET base_price = 100000.00 WHERE seat_type = 'NORMAL' AND (base_price IS NULL OR base_price = 0);
+UPDATE seats SET base_price = 150000.00 WHERE seat_type = 'VIP' AND (base_price IS NULL OR base_price = 0);
+UPDATE seats SET base_price = 200000.00 WHERE seat_type = 'COUPLE' AND (base_price IS NULL OR base_price = 0);
+
+-- Cập nhật is_active cho users
+UPDATE users SET is_active = TRUE WHERE is_active IS NULL;
+
+-- =============================================
 -- Update is_active cho các phim hiện có (nếu chưa được set)
 -- =============================================
 -- Cập nhật phim cũ (end_date < 2025-11-19) thành inactive
@@ -340,45 +360,146 @@ WHERE is_active IS NULL;
 -- =============================================
 -- Insert Showtimes
 -- =============================================
--- Showtimes cho phim mới (đang chiếu và sắp chiếu) - Tháng 11-12/2025
+-- Showtimes cho phim mới (đang chiếu và sắp chiếu) - Từ 21/11/2025 đến 28/11/2025
 -- Phim đang chiếu (movie_id 21-31): Deadpool & Wolverine, Gladiator 2, Beetlejuice, etc.
+-- Xóa bookings và booking_items trước khi xóa showtimes (do foreign key constraint)
+-- Sử dụng JOIN để xóa (MySQL không hỗ trợ subquery trong DELETE)
+DELETE bi FROM booking_items bi
+INNER JOIN bookings b ON bi.booking_id = b.id
+INNER JOIN showtimes s ON b.showtime_id = s.id
+WHERE s.movie_id >= 21;
+
+DELETE b FROM bookings b
+INNER JOIN showtimes s ON b.showtime_id = s.id
+WHERE s.movie_id >= 21;
+
 -- Xóa showtimes cũ (movie_id >= 21)
 DELETE FROM showtimes WHERE movie_id >= 21;
 
 -- Insert showtimes mới (không có price, không trùng giờ trong cùng phòng)
+-- Từ 21/11/2025 đến 28/11/2025 với nhiều khung giờ khác nhau mỗi ngày
 INSERT IGNORE INTO showtimes (movie_id, cinema_hall_id, show_date, start_time, end_time, is_active)
 VALUES 
--- Deadpool & Wolverine (21) - Đang chiếu từ 15/10
-(21, 1, '2025-11-20', '09:00:00', '11:07:00', TRUE),
-(21, 1, '2025-11-20', '12:00:00', '14:07:00', TRUE),
-(21, 1, '2025-11-20', '15:00:00', '17:07:00', TRUE),
-(21, 1, '2025-11-20', '18:00:00', '20:07:00', TRUE),
-(21, 1, '2025-11-20', '21:00:00', '23:07:00', TRUE),
-(21, 2, '2025-11-21', '10:00:00', '12:07:00', TRUE),
-(21, 2, '2025-11-21', '14:00:00', '16:07:00', TRUE),
-(21, 2, '2025-11-21', '19:00:00', '21:07:00', TRUE),
-(21, 3, '2025-11-22', '11:00:00', '13:07:00', TRUE),
-(21, 3, '2025-11-22', '16:00:00', '18:07:00', TRUE),
-(21, 3, '2025-11-22', '20:00:00', '22:07:00', TRUE),
+-- Deadpool & Wolverine (21) - 127 phút
+(21, 1, '2025-11-21', '09:00:00', '11:07:00', TRUE),
+(21, 1, '2025-11-21', '12:00:00', '14:07:00', TRUE),
+(21, 1, '2025-11-21', '15:00:00', '17:07:00', TRUE),
+(21, 1, '2025-11-21', '18:00:00', '20:07:00', TRUE),
+(21, 1, '2025-11-21', '21:00:00', '23:07:00', TRUE),
+(21, 2, '2025-11-22', '09:00:00', '11:07:00', TRUE),
+(21, 2, '2025-11-22', '12:00:00', '14:07:00', TRUE),
+(21, 2, '2025-11-22', '15:00:00', '17:07:00', TRUE),
+(21, 2, '2025-11-22', '18:00:00', '20:07:00', TRUE),
+(21, 3, '2025-11-23', '09:00:00', '11:07:00', TRUE),
+(21, 3, '2025-11-23', '12:00:00', '14:07:00', TRUE),
+(21, 3, '2025-11-23', '15:00:00', '17:07:00', TRUE),
+(21, 3, '2025-11-23', '18:00:00', '20:07:00', TRUE),
+(21, 1, '2025-11-24', '10:00:00', '12:07:00', TRUE),
+(21, 1, '2025-11-24', '13:00:00', '15:07:00', TRUE),
+(21, 1, '2025-11-24', '16:00:00', '18:07:00', TRUE),
+(21, 1, '2025-11-24', '19:00:00', '21:07:00', TRUE),
+(21, 2, '2025-11-25', '10:00:00', '12:07:00', TRUE),
+(21, 2, '2025-11-25', '13:00:00', '15:07:00', TRUE),
+(21, 2, '2025-11-25', '16:00:00', '18:07:00', TRUE),
+(21, 2, '2025-11-25', '19:00:00', '21:07:00', TRUE),
+(21, 3, '2025-11-26', '10:00:00', '12:07:00', TRUE),
+(21, 3, '2025-11-26', '13:00:00', '15:07:00', TRUE),
+(21, 3, '2025-11-26', '16:00:00', '18:07:00', TRUE),
+(21, 3, '2025-11-26', '19:00:00', '21:07:00', TRUE),
+(21, 1, '2025-11-27', '10:00:00', '12:07:00', TRUE),
+(21, 1, '2025-11-27', '13:00:00', '15:07:00', TRUE),
+(21, 1, '2025-11-27', '16:00:00', '18:07:00', TRUE),
+(21, 1, '2025-11-27', '19:00:00', '21:07:00', TRUE),
+(21, 2, '2025-11-28', '10:00:00', '12:07:00', TRUE),
+(21, 2, '2025-11-28', '13:00:00', '15:07:00', TRUE),
+(21, 2, '2025-11-28', '16:00:00', '18:07:00', TRUE),
+(21, 2, '2025-11-28', '19:00:00', '21:07:00', TRUE),
 
--- Gladiator 2 (22) - Đang chiếu từ 20/10
-(22, 4, '2025-11-20', '09:30:00', '12:08:00', TRUE),
-(22, 4, '2025-11-20', '13:00:00', '15:38:00', TRUE),
-(22, 4, '2025-11-20', '16:30:00', '19:08:00', TRUE),
-(22, 4, '2025-11-20', '20:00:00', '22:38:00', TRUE),
-(22, 5, '2025-11-21', '10:30:00', '13:08:00', TRUE),
-(22, 5, '2025-11-21', '15:00:00', '17:38:00', TRUE),
-(22, 5, '2025-11-21', '19:30:00', '22:08:00', TRUE),
+-- Gladiator 2 (22) - 158 phút
+(22, 4, '2025-11-21', '09:00:00', '11:38:00', TRUE),
+(22, 4, '2025-11-21', '12:00:00', '14:38:00', TRUE),
+(22, 4, '2025-11-21', '15:00:00', '17:38:00', TRUE),
+(22, 4, '2025-11-21', '18:00:00', '20:38:00', TRUE),
+(22, 4, '2025-11-21', '21:00:00', '23:38:00', TRUE),
+(22, 5, '2025-11-22', '09:00:00', '11:38:00', TRUE),
+(22, 5, '2025-11-22', '12:00:00', '14:38:00', TRUE),
+(22, 5, '2025-11-22', '15:00:00', '17:38:00', TRUE),
+(22, 5, '2025-11-22', '18:00:00', '20:38:00', TRUE),
+(22, 6, '2025-11-23', '09:00:00', '11:38:00', TRUE),
+(22, 6, '2025-11-23', '12:00:00', '14:38:00', TRUE),
+(22, 6, '2025-11-23', '15:00:00', '17:38:00', TRUE),
+(22, 6, '2025-11-23', '18:00:00', '20:38:00', TRUE),
+(22, 4, '2025-11-24', '10:00:00', '12:38:00', TRUE),
+(22, 4, '2025-11-24', '13:00:00', '15:38:00', TRUE),
+(22, 4, '2025-11-24', '16:00:00', '18:38:00', TRUE),
+(22, 4, '2025-11-24', '19:00:00', '21:38:00', TRUE),
+(22, 5, '2025-11-25', '10:00:00', '12:38:00', TRUE),
+(22, 5, '2025-11-25', '13:00:00', '15:38:00', TRUE),
+(22, 5, '2025-11-25', '16:00:00', '18:38:00', TRUE),
+(22, 5, '2025-11-25', '19:00:00', '21:38:00', TRUE),
+(22, 6, '2025-11-26', '10:00:00', '12:38:00', TRUE),
+(22, 6, '2025-11-26', '13:00:00', '15:38:00', TRUE),
+(22, 6, '2025-11-26', '16:00:00', '18:38:00', TRUE),
+(22, 6, '2025-11-26', '19:00:00', '21:38:00', TRUE),
+(22, 4, '2025-11-27', '10:00:00', '12:38:00', TRUE),
+(22, 4, '2025-11-27', '13:00:00', '15:38:00', TRUE),
+(22, 4, '2025-11-27', '16:00:00', '18:38:00', TRUE),
+(22, 4, '2025-11-27', '19:00:00', '21:38:00', TRUE),
+(22, 5, '2025-11-28', '10:00:00', '12:38:00', TRUE),
+(22, 5, '2025-11-28', '13:00:00', '15:38:00', TRUE),
+(22, 5, '2025-11-28', '16:00:00', '18:38:00', TRUE),
+(22, 5, '2025-11-28', '19:00:00', '21:38:00', TRUE),
 
--- Beetlejuice Beetlejuice (23) - Đang chiếu từ 25/10
-(23, 6, '2025-11-20', '09:00:00', '10:55:00', TRUE),
-(23, 6, '2025-11-20', '12:00:00', '13:55:00', TRUE),
-(23, 6, '2025-11-20', '15:00:00', '16:55:00', TRUE),
-(23, 6, '2025-11-20', '18:00:00', '19:55:00', TRUE),
-(23, 6, '2025-11-20', '21:00:00', '22:55:00', TRUE),
-(23, 7, '2025-11-21', '10:00:00', '11:55:00', TRUE),
-(23, 7, '2025-11-21', '14:00:00', '15:55:00', TRUE),
-(23, 7, '2025-11-21', '19:00:00', '20:55:00', TRUE),
+-- Beetlejuice Beetlejuice (23) - 115 phút
+(23, 6, '2025-11-21', '09:00:00', '10:55:00', TRUE),
+(23, 6, '2025-11-21', '11:00:00', '12:55:00', TRUE),
+(23, 6, '2025-11-21', '13:00:00', '14:55:00', TRUE),
+(23, 6, '2025-11-21', '15:00:00', '16:55:00', TRUE),
+(23, 6, '2025-11-21', '17:00:00', '18:55:00', TRUE),
+(23, 6, '2025-11-21', '19:00:00', '20:55:00', TRUE),
+(23, 6, '2025-11-21', '21:00:00', '22:55:00', TRUE),
+(23, 7, '2025-11-22', '09:00:00', '10:55:00', TRUE),
+(23, 7, '2025-11-22', '11:00:00', '12:55:00', TRUE),
+(23, 7, '2025-11-22', '13:00:00', '14:55:00', TRUE),
+(23, 7, '2025-11-22', '15:00:00', '16:55:00', TRUE),
+(23, 7, '2025-11-22', '17:00:00', '18:55:00', TRUE),
+(23, 7, '2025-11-22', '19:00:00', '20:55:00', TRUE),
+(23, 6, '2025-11-23', '09:00:00', '10:55:00', TRUE),
+(23, 6, '2025-11-23', '11:00:00', '12:55:00', TRUE),
+(23, 6, '2025-11-23', '13:00:00', '14:55:00', TRUE),
+(23, 6, '2025-11-23', '15:00:00', '16:55:00', TRUE),
+(23, 6, '2025-11-23', '17:00:00', '18:55:00', TRUE),
+(23, 6, '2025-11-23', '19:00:00', '20:55:00', TRUE),
+(23, 7, '2025-11-24', '09:00:00', '10:55:00', TRUE),
+(23, 7, '2025-11-24', '11:00:00', '12:55:00', TRUE),
+(23, 7, '2025-11-24', '13:00:00', '14:55:00', TRUE),
+(23, 7, '2025-11-24', '15:00:00', '16:55:00', TRUE),
+(23, 7, '2025-11-24', '17:00:00', '18:55:00', TRUE),
+(23, 7, '2025-11-24', '19:00:00', '20:55:00', TRUE),
+(23, 6, '2025-11-25', '09:00:00', '10:55:00', TRUE),
+(23, 6, '2025-11-25', '11:00:00', '12:55:00', TRUE),
+(23, 6, '2025-11-25', '13:00:00', '14:55:00', TRUE),
+(23, 6, '2025-11-25', '15:00:00', '16:55:00', TRUE),
+(23, 6, '2025-11-25', '17:00:00', '18:55:00', TRUE),
+(23, 6, '2025-11-25', '19:00:00', '20:55:00', TRUE),
+(23, 7, '2025-11-26', '09:00:00', '10:55:00', TRUE),
+(23, 7, '2025-11-26', '11:00:00', '12:55:00', TRUE),
+(23, 7, '2025-11-26', '13:00:00', '14:55:00', TRUE),
+(23, 7, '2025-11-26', '15:00:00', '16:55:00', TRUE),
+(23, 7, '2025-11-26', '17:00:00', '18:55:00', TRUE),
+(23, 7, '2025-11-26', '19:00:00', '20:55:00', TRUE),
+(23, 6, '2025-11-27', '09:00:00', '10:55:00', TRUE),
+(23, 6, '2025-11-27', '11:00:00', '12:55:00', TRUE),
+(23, 6, '2025-11-27', '13:00:00', '14:55:00', TRUE),
+(23, 6, '2025-11-27', '15:00:00', '16:55:00', TRUE),
+(23, 6, '2025-11-27', '17:00:00', '18:55:00', TRUE),
+(23, 6, '2025-11-27', '19:00:00', '20:55:00', TRUE),
+(23, 7, '2025-11-28', '09:00:00', '10:55:00', TRUE),
+(23, 7, '2025-11-28', '11:00:00', '12:55:00', TRUE),
+(23, 7, '2025-11-28', '13:00:00', '14:55:00', TRUE),
+(23, 7, '2025-11-28', '15:00:00', '16:55:00', TRUE),
+(23, 7, '2025-11-28', '17:00:00', '18:55:00', TRUE),
+(23, 7, '2025-11-28', '19:00:00', '20:55:00', TRUE),
 
 -- Transformers One (24) - Đang chiếu từ 30/10
 (24, 8, '2025-11-20', '09:00:00', '10:44:00', TRUE),
@@ -669,6 +790,18 @@ VALUES
 (35, 8, '2025-12-04', '20:00:00', '22:08:00', TRUE);
 
 -- =============================================
+-- Update showtimes để đảm bảo tất cả showtimes từ 21/11/2025 đến 28/11/2025
+-- =============================================
+-- Cập nhật tất cả showtimes có ngày < 21/11/2025 hoặc > 28/11/2025
+-- Chuyển về khoảng 21/11/2025 - 28/11/2025 (8 ngày)
+UPDATE showtimes 
+SET show_date = DATE_ADD('2025-11-21', INTERVAL (id % 8) DAY)
+WHERE show_date < '2025-11-21' OR show_date > '2025-11-28';
+
+-- Đảm bảo tất cả showtimes có is_active = TRUE
+UPDATE showtimes SET is_active = TRUE WHERE is_active IS NULL;
+
+-- =============================================
 -- Insert Seats (tạo ghế cho tất cả các phòng chiếu)
 -- =============================================
 -- Sử dụng recursive CTE để tạo ghế (MySQL 8.0+ / MariaDB 10.2+)
@@ -798,6 +931,294 @@ seat_numbers AS (
 SELECT 8, CONCAT(CHAR(ASCII('A') + row_num - 1), seat_num), CHAR(ASCII('A') + row_num - 1),
        CASE WHEN row_num BETWEEN 3 AND 5 THEN 'VIP' ELSE 'NORMAL' END
 FROM row_numbers CROSS JOIN seat_numbers;
+
+-- =============================================
+-- Insert Bookings và Booking Items
+-- =============================================
+-- Tạo bookings cho các showtimes từ 21/11-28/11 với ghế được rải đều
+-- Xóa bookings cũ nếu có (xóa trước khi xóa showtimes để tránh foreign key constraint)
+DELETE FROM booking_items;
+DELETE FROM bookings;
+
+-- Booking 1: Deadpool & Wolverine - 21/11, 09:00, Phòng 1, ghế A5, A6, A7
+INSERT INTO bookings (user_id, showtime_id, booking_code, qr_code, total_amount, booking_status, payment_status, payment_method, booking_date)
+SELECT 3, s.id, 'BK20251121001', 'QR-BK20251121001-ABC123DEF', 300000.00, 'CONFIRMED', 'PAID', 'MOMO', NOW()
+FROM showtimes s WHERE s.movie_id = 21 AND s.show_date = '2025-11-21' AND s.start_time = '09:00:00' LIMIT 1;
+
+INSERT INTO booking_items (booking_id, seat_id, price)
+SELECT b.id, s.id, 100000.00
+FROM bookings b
+CROSS JOIN seats s
+WHERE b.booking_code = 'BK20251121001'
+  AND s.cinema_hall_id = 1
+  AND s.seat_number IN ('A5', 'A6', 'A7')
+LIMIT 3;
+
+-- Booking 2: Deadpool & Wolverine - 21/11, 12:00, Phòng 1, ghế C3, C4, C5, C6 (VIP)
+INSERT INTO bookings (user_id, showtime_id, booking_code, qr_code, total_amount, booking_status, payment_status, payment_method, booking_date)
+SELECT 4, s.id, 'BK20251121002', 'QR-BK20251121002-XYZ789GHI', 600000.00, 'CONFIRMED', 'PAID', 'BANK_TRANSFER', NOW()
+FROM showtimes s WHERE s.movie_id = 21 AND s.show_date = '2025-11-21' AND s.start_time = '12:00:00' LIMIT 1;
+
+INSERT INTO booking_items (booking_id, seat_id, price)
+SELECT b.id, s.id, 150000.00
+FROM bookings b
+CROSS JOIN seats s
+WHERE b.booking_code = 'BK20251121002'
+  AND s.cinema_hall_id = 1
+  AND s.seat_number IN ('C3', 'C4', 'C5', 'C6')
+LIMIT 4;
+
+-- Booking 3: Deadpool & Wolverine - 21/11, 15:00, Phòng 1, ghế E10, E11, E12
+INSERT INTO bookings (user_id, showtime_id, booking_code, qr_code, total_amount, booking_status, payment_status, payment_method, booking_date)
+SELECT 3, s.id, 'BK20251121003', 'QR-BK20251121003-MNO456PQR', 300000.00, 'PENDING', 'PENDING', 'CASH', NOW()
+FROM showtimes s WHERE s.movie_id = 21 AND s.show_date = '2025-11-21' AND s.start_time = '15:00:00' LIMIT 1;
+
+INSERT INTO booking_items (booking_id, seat_id, price)
+SELECT b.id, s.id, 100000.00
+FROM bookings b
+CROSS JOIN seats s
+WHERE b.booking_code = 'BK20251121003'
+  AND s.cinema_hall_id = 1
+  AND s.seat_number IN ('E10', 'E11', 'E12')
+LIMIT 3;
+
+-- Booking 4: Deadpool & Wolverine - 22/11, 09:00, Phòng 2, ghế B8, B9, B10
+INSERT INTO bookings (user_id, showtime_id, booking_code, qr_code, total_amount, booking_status, payment_status, payment_method, booking_date)
+SELECT 4, s.id, 'BK20251122001', 'QR-BK20251122001-STU123VWX', 300000.00, 'CONFIRMED', 'PAID', 'CREDIT_CARD', NOW()
+FROM showtimes s WHERE s.movie_id = 21 AND s.show_date = '2025-11-22' AND s.start_time = '09:00:00' LIMIT 1;
+
+INSERT INTO booking_items (booking_id, seat_id, price)
+SELECT b.id, s.id, 100000.00
+FROM bookings b
+CROSS JOIN seats s
+WHERE b.booking_code = 'BK20251122001'
+  AND s.cinema_hall_id = 2
+  AND s.seat_number IN ('B8', 'B9', 'B10')
+LIMIT 3;
+
+-- Booking 5: Deadpool & Wolverine - 22/11, 12:00, Phòng 2, ghế D5, D6 (VIP)
+INSERT INTO bookings (user_id, showtime_id, booking_code, qr_code, total_amount, booking_status, payment_status, payment_method, booking_date)
+SELECT 3, s.id, 'BK20251122002', 'QR-BK20251122002-YZA789BCD', 300000.00, 'CONFIRMED', 'PAID', 'MOMO', NOW()
+FROM showtimes s WHERE s.movie_id = 21 AND s.show_date = '2025-11-22' AND s.start_time = '12:00:00' LIMIT 1;
+
+INSERT INTO booking_items (booking_id, seat_id, price)
+SELECT b.id, s.id, 150000.00
+FROM bookings b
+CROSS JOIN seats s
+WHERE b.booking_code = 'BK20251122002'
+  AND s.cinema_hall_id = 2
+  AND s.seat_number IN ('D5', 'D6')
+LIMIT 2;
+
+-- Booking 6: Gladiator 2 - 21/11, 09:00, Phòng 4, ghế F1, F2, F3, F4
+INSERT INTO bookings (user_id, showtime_id, booking_code, qr_code, total_amount, booking_status, payment_status, payment_method, booking_date)
+SELECT 4, s.id, 'BK20251121004', 'QR-BK20251121004-EFG456HIJ', 400000.00, 'CONFIRMED', 'PAID', 'BANK_TRANSFER', NOW()
+FROM showtimes s WHERE s.movie_id = 22 AND s.show_date = '2025-11-21' AND s.start_time = '09:00:00' LIMIT 1;
+
+INSERT INTO booking_items (booking_id, seat_id, price)
+SELECT b.id, s.id, 100000.00
+FROM bookings b
+CROSS JOIN seats s
+WHERE b.booking_code = 'BK20251121004'
+  AND s.cinema_hall_id = 4
+  AND s.seat_number IN ('F1', 'F2', 'F3', 'F4')
+LIMIT 4;
+
+-- Booking 7: Gladiator 2 - 21/11, 12:00, Phòng 4, ghế E8, E9 (VIP)
+INSERT INTO bookings (user_id, showtime_id, booking_code, qr_code, total_amount, booking_status, payment_status, payment_method, booking_date)
+SELECT 3, s.id, 'BK20251121005', 'QR-BK20251121005-KLM123NOP', 300000.00, 'PENDING', 'PENDING', 'CASH', NOW()
+FROM showtimes s WHERE s.movie_id = 22 AND s.show_date = '2025-11-21' AND s.start_time = '12:00:00' LIMIT 1;
+
+INSERT INTO booking_items (booking_id, seat_id, price)
+SELECT b.id, s.id, 150000.00
+FROM bookings b
+CROSS JOIN seats s
+WHERE b.booking_code = 'BK20251121005'
+  AND s.cinema_hall_id = 4
+  AND s.seat_number IN ('E8', 'E9')
+LIMIT 2;
+
+-- Booking 8: Beetlejuice - 21/11, 09:00, Phòng 6, ghế G5, G6, G7, G8
+INSERT INTO bookings (user_id, showtime_id, booking_code, qr_code, total_amount, booking_status, payment_status, payment_method, booking_date)
+SELECT 4, s.id, 'BK20251121006', 'QR-BK20251121006-QRS789TUV', 400000.00, 'CONFIRMED', 'PAID', 'CREDIT_CARD', NOW()
+FROM showtimes s WHERE s.movie_id = 23 AND s.show_date = '2025-11-21' AND s.start_time = '09:00:00' LIMIT 1;
+
+INSERT INTO booking_items (booking_id, seat_id, price)
+SELECT b.id, s.id, 100000.00
+FROM bookings b
+CROSS JOIN seats s
+WHERE b.booking_code = 'BK20251121006'
+  AND s.cinema_hall_id = 6
+  AND s.seat_number IN ('G5', 'G6', 'G7', 'G8')
+LIMIT 4;
+
+-- Booking 9: Beetlejuice - 21/11, 11:00, Phòng 6, ghế D10, D11 (VIP)
+INSERT INTO bookings (user_id, showtime_id, booking_code, qr_code, total_amount, booking_status, payment_status, payment_method, booking_date)
+SELECT 3, s.id, 'BK20251121007', 'QR-BK20251121007-WXY456ZAB', 300000.00, 'CONFIRMED', 'PAID', 'MOMO', NOW()
+FROM showtimes s WHERE s.movie_id = 23 AND s.show_date = '2025-11-21' AND s.start_time = '11:00:00' LIMIT 1;
+
+INSERT INTO booking_items (booking_id, seat_id, price)
+SELECT b.id, s.id, 150000.00
+FROM bookings b
+CROSS JOIN seats s
+WHERE b.booking_code = 'BK20251121007'
+  AND s.cinema_hall_id = 6
+  AND s.seat_number IN ('D10', 'D11')
+LIMIT 2;
+
+-- Booking 10: Transformers One - 21/11, 09:00, Phòng 8, ghế C1, C2, C3 (VIP)
+INSERT INTO bookings (user_id, showtime_id, booking_code, qr_code, total_amount, booking_status, payment_status, payment_method, booking_date)
+SELECT 4, s.id, 'BK20251121008', 'QR-BK20251121008-CDE123FGH', 450000.00, 'CONFIRMED', 'PAID', 'BANK_TRANSFER', NOW()
+FROM showtimes s WHERE s.movie_id = 24 AND s.show_date = '2025-11-21' AND s.start_time = '09:00:00' LIMIT 1;
+
+INSERT INTO booking_items (booking_id, seat_id, price)
+SELECT b.id, s.id, 150000.00
+FROM bookings b
+CROSS JOIN seats s
+WHERE b.booking_code = 'BK20251121008'
+  AND s.cinema_hall_id = 8
+  AND s.seat_number IN ('C1', 'C2', 'C3')
+LIMIT 3;
+
+-- Booking 11: Wicked - 21/11, 09:00, Phòng 4, ghế H5, H6, H7
+INSERT INTO bookings (user_id, showtime_id, booking_code, qr_code, total_amount, booking_status, payment_status, payment_method, booking_date)
+SELECT 3, s.id, 'BK20251121009', 'QR-BK20251121009-IJK789LMN', 300000.00, 'PENDING', 'PENDING', 'CASH', NOW()
+FROM showtimes s WHERE s.movie_id = 26 AND s.show_date = '2025-11-21' AND s.start_time = '09:00:00' LIMIT 1;
+
+INSERT INTO booking_items (booking_id, seat_id, price)
+SELECT b.id, s.id, 100000.00
+FROM bookings b
+CROSS JOIN seats s
+WHERE b.booking_code = 'BK20251121009'
+  AND s.cinema_hall_id = 4
+  AND s.seat_number IN ('H5', 'H6', 'H7')
+LIMIT 3;
+
+-- Booking 12: Moana 2 - 21/11, 09:00, Phòng 6, ghế I10, I11, I12, I13
+INSERT INTO bookings (user_id, showtime_id, booking_code, qr_code, total_amount, booking_status, payment_status, payment_method, booking_date)
+SELECT 4, s.id, 'BK20251121010', 'QR-BK20251121010-OPQ456RST', 400000.00, 'CONFIRMED', 'PAID', 'CREDIT_CARD', NOW()
+FROM showtimes s WHERE s.movie_id = 27 AND s.show_date = '2025-11-21' AND s.start_time = '09:00:00' LIMIT 1;
+
+INSERT INTO booking_items (booking_id, seat_id, price)
+SELECT b.id, s.id, 100000.00
+FROM bookings b
+CROSS JOIN seats s
+WHERE b.booking_code = 'BK20251121010'
+  AND s.cinema_hall_id = 6
+  AND s.seat_number IN ('I10', 'I11', 'I12', 'I13')
+LIMIT 4;
+
+-- Booking 13: Mufasa - 21/11, 09:00, Phòng 8, ghế A8, A9, A10
+INSERT INTO bookings (user_id, showtime_id, booking_code, qr_code, total_amount, booking_status, payment_status, payment_method, booking_date)
+SELECT 3, s.id, 'BK20251121011', 'QR-BK20251121011-UVW123XYZ', 300000.00, 'CONFIRMED', 'PAID', 'MOMO', NOW()
+FROM showtimes s WHERE s.movie_id = 28 AND s.show_date = '2025-11-21' AND s.start_time = '09:00:00' LIMIT 1;
+
+INSERT INTO booking_items (booking_id, seat_id, price)
+SELECT b.id, s.id, 100000.00
+FROM bookings b
+CROSS JOIN seats s
+WHERE b.booking_code = 'BK20251121011'
+  AND s.cinema_hall_id = 8
+  AND s.seat_number IN ('A8', 'A9', 'A10')
+LIMIT 3;
+
+-- Booking 14: Smile 2 - 21/11, 09:00, Phòng 2, ghế C8, C9 (VIP)
+INSERT INTO bookings (user_id, showtime_id, booking_code, qr_code, total_amount, booking_status, payment_status, payment_method, booking_date)
+SELECT 4, s.id, 'BK20251121012', 'QR-BK20251121012-ABC789DEF', 300000.00, 'CONFIRMED', 'PAID', 'BANK_TRANSFER', NOW()
+FROM showtimes s WHERE s.movie_id = 29 AND s.show_date = '2025-11-21' AND s.start_time = '09:00:00' LIMIT 1;
+
+INSERT INTO booking_items (booking_id, seat_id, price)
+SELECT b.id, s.id, 150000.00
+FROM bookings b
+CROSS JOIN seats s
+WHERE b.booking_code = 'BK20251121012'
+  AND s.cinema_hall_id = 2
+  AND s.seat_number IN ('C8', 'C9')
+LIMIT 2;
+
+-- Booking 15: The Substance - 21/11, 09:00, Phòng 4, ghế J6, J7, J8, J9
+INSERT INTO bookings (user_id, showtime_id, booking_code, qr_code, total_amount, booking_status, payment_status, payment_method, booking_date)
+SELECT 3, s.id, 'BK20251121013', 'QR-BK20251121013-GHI456JKL', 400000.00, 'PENDING', 'PENDING', 'CASH', NOW()
+FROM showtimes s WHERE s.movie_id = 30 AND s.show_date = '2025-11-21' AND s.start_time = '09:00:00' LIMIT 1;
+
+INSERT INTO booking_items (booking_id, seat_id, price)
+SELECT b.id, s.id, 100000.00
+FROM bookings b
+CROSS JOIN seats s
+WHERE b.booking_code = 'BK20251121013'
+  AND s.cinema_hall_id = 4
+  AND s.seat_number IN ('J6', 'J7', 'J8', 'J9')
+LIMIT 4;
+
+-- Booking 16: Deadpool & Wolverine - 23/11, 09:00, Phòng 3, ghế B1, B2, B3
+INSERT INTO bookings (user_id, showtime_id, booking_code, qr_code, total_amount, booking_status, payment_status, payment_method, booking_date)
+SELECT 4, s.id, 'BK20251123001', 'QR-BK20251123001-MNO789PQR', 300000.00, 'CONFIRMED', 'PAID', 'CREDIT_CARD', NOW()
+FROM showtimes s WHERE s.movie_id = 21 AND s.show_date = '2025-11-23' AND s.start_time = '09:00:00' LIMIT 1;
+
+INSERT INTO booking_items (booking_id, seat_id, price)
+SELECT b.id, s.id, 100000.00
+FROM bookings b
+CROSS JOIN seats s
+WHERE b.booking_code = 'BK20251123001'
+  AND s.cinema_hall_id = 3
+  AND s.seat_number IN ('B1', 'B2', 'B3')
+LIMIT 3;
+
+-- Booking 17: Gladiator 2 - 22/11, 09:00, Phòng 5, ghế A5, A6 (VIP)
+INSERT INTO bookings (user_id, showtime_id, booking_code, qr_code, total_amount, booking_status, payment_status, payment_method, booking_date)
+SELECT 3, s.id, 'BK20251122003', 'QR-BK20251122003-STV456WXY', 300000.00, 'CONFIRMED', 'PAID', 'MOMO', NOW()
+FROM showtimes s WHERE s.movie_id = 22 AND s.show_date = '2025-11-22' AND s.start_time = '09:00:00' LIMIT 1;
+
+INSERT INTO booking_items (booking_id, seat_id, price)
+SELECT b.id, s.id, 150000.00
+FROM bookings b
+CROSS JOIN seats s
+WHERE b.booking_code = 'BK20251122003'
+  AND s.cinema_hall_id = 5
+  AND s.seat_number IN ('A5', 'A6')
+LIMIT 2;
+
+-- Booking 18: Beetlejuice - 22/11, 09:00, Phòng 7, ghế E5, E6, E7
+INSERT INTO bookings (user_id, showtime_id, booking_code, qr_code, total_amount, booking_status, payment_status, payment_method, booking_date)
+SELECT 4, s.id, 'BK20251122004', 'QR-BK20251122004-ZAB123CDE', 300000.00, 'CONFIRMED', 'PAID', 'BANK_TRANSFER', NOW()
+FROM showtimes s WHERE s.movie_id = 23 AND s.show_date = '2025-11-22' AND s.start_time = '09:00:00' LIMIT 1;
+
+INSERT INTO booking_items (booking_id, seat_id, price)
+SELECT b.id, s.id, 100000.00
+FROM bookings b
+CROSS JOIN seats s
+WHERE b.booking_code = 'BK20251122004'
+  AND s.cinema_hall_id = 7
+  AND s.seat_number IN ('E5', 'E6', 'E7')
+LIMIT 3;
+
+-- Booking 19: Wicked - 24/11, 10:00, Phòng 4, ghế K1, K2, K3, K4
+INSERT INTO bookings (user_id, showtime_id, booking_code, qr_code, total_amount, booking_status, payment_status, payment_method, booking_date)
+SELECT 3, s.id, 'BK20251124001', 'QR-BK20251124001-FGH789IJK', 400000.00, 'PENDING', 'PENDING', 'CASH', NOW()
+FROM showtimes s WHERE s.movie_id = 26 AND s.show_date = '2025-11-24' AND s.start_time = '10:00:00' LIMIT 1;
+
+INSERT INTO booking_items (booking_id, seat_id, price)
+SELECT b.id, s.id, 100000.00
+FROM bookings b
+CROSS JOIN seats s
+WHERE b.booking_code = 'BK20251124001'
+  AND s.cinema_hall_id = 4
+  AND s.seat_number IN ('K1', 'K2', 'K3', 'K4')
+LIMIT 4;
+
+-- Booking 20: Moana 2 - 25/11, 10:00, Phòng 6, ghế F8, F9, F10
+INSERT INTO bookings (user_id, showtime_id, booking_code, qr_code, total_amount, booking_status, payment_status, payment_method, booking_date)
+SELECT 4, s.id, 'BK20251125001', 'QR-BK20251125001-LMN456OPQ', 300000.00, 'CONFIRMED', 'PAID', 'CREDIT_CARD', NOW()
+FROM showtimes s WHERE s.movie_id = 27 AND s.show_date = '2025-11-25' AND s.start_time = '10:00:00' LIMIT 1;
+
+INSERT INTO booking_items (booking_id, seat_id, price)
+SELECT b.id, s.id, 100000.00
+FROM bookings b
+CROSS JOIN seats s
+WHERE b.booking_code = 'BK20251125001'
+  AND s.cinema_hall_id = 6
+  AND s.seat_number IN ('F8', 'F9', 'F10')
+LIMIT 3;
 
 -- =============================================
 -- Insert Reviews

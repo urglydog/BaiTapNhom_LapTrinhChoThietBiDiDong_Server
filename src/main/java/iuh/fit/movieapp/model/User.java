@@ -50,6 +50,7 @@ public class User {
     private String avatarUrl;
 
     @Column(name = "is_active")
+    @Builder.Default
     private Boolean active = true;
 
     @Enumerated(EnumType.STRING)

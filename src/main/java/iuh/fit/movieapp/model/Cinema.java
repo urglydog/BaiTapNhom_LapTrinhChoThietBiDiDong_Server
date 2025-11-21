@@ -43,6 +43,7 @@ public class Cinema {
     private String imageUrl;
 
     @Column(name = "is_active")
+    @Builder.Default
     private Boolean active = true;
 
     @OneToMany(mappedBy = "cinema", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
