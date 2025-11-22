@@ -27,6 +27,12 @@ public class CinemaHall {
     @JsonBackReference
     private Cinema cinema;
 
+    // Getter để expose cinemaId trong JSON response
+    @com.fasterxml.jackson.annotation.JsonGetter("cinemaId")
+    public int getCinemaId() {
+        return cinema != null ? cinema.getId() : 0;
+    }
+
     @Column(name = "hall_name", nullable = false)
     private String hallName;
 

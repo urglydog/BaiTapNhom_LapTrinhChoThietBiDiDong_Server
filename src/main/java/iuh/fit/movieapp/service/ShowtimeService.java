@@ -32,6 +32,7 @@ public class ShowtimeService {
     public List<Showtime> findByMovieId(int movieId) {
         Movie movie = movieRepo.findById(movieId)
                 .orElseThrow(() -> new AppException(ErrorCode.MOVIE_NOT_FOUND));
+        // Repository đã JOIN FETCH cinemaHall, nên không cần trigger lazy load
         return showtimeRepo.findByMovie(movie);
     }
 
