@@ -5,6 +5,7 @@ import iuh.fit.movieapp.dto.response.SuccessCode;
 import iuh.fit.movieapp.model.User;
 import iuh.fit.movieapp.service.UserService;
 import lombok.AllArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,6 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
+@CrossOrigin(origins = "*")
 @AllArgsConstructor
 public class UserController {
     private final UserService userService;
@@ -37,13 +39,13 @@ public class UserController {
         return new ApiResponse<>(SuccessCode.FETCH_SUCCESS, userService.findByEmail(email));
     }
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ApiResponse<User> createUser(@RequestBody User user) {
         User createdUser = userService.createUser(user);
         return new ApiResponse<>(SuccessCode.USER_CREATED, createdUser);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ApiResponse<User> updateUser(@PathVariable int id, @RequestBody User user) {
         user.setId(id);
         User updatedUser = userService.updateUser(user);
