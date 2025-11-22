@@ -34,6 +34,12 @@ public class Showtime {
     @JsonBackReference
     private CinemaHall cinemaHall;
 
+    // Getter để expose cinemaHallId trong JSON response
+    @com.fasterxml.jackson.annotation.JsonGetter("cinemaHallId")
+    public int getCinemaHallId() {
+        return cinemaHall != null ? cinemaHall.getId() : 0;
+    }
+
     @Column(name = "show_date", nullable = false)
     private LocalDate showDate;
 

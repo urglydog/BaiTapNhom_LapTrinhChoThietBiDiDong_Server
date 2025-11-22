@@ -13,7 +13,8 @@ import java.util.List;
 
 @Repository
 public interface ShowtimeRepository extends JpaRepository<Showtime, Integer> {
-        List<Showtime> findByMovie(Movie movie);
+        @Query("SELECT s FROM Showtime s JOIN FETCH s.cinemaHall ch JOIN FETCH ch.cinema WHERE s.movie = :movie")
+        List<Showtime> findByMovie(@Param("movie") Movie movie);
 
         List<Showtime> findByCinemaHall(CinemaHall cinemaHall);
 
@@ -21,7 +22,7 @@ public interface ShowtimeRepository extends JpaRepository<Showtime, Integer> {
 
         List<Showtime> findByCinemaHallAndShowDate(CinemaHall cinemaHall, LocalDate showDate);
 
-        @Query("SELECT s FROM Showtime s WHERE s.movie = :movie AND s.showDate = :showDate AND s.active = true ORDER BY s.startTime")
+        @Query("SELECT s FROM Showtime s JOIN FETCH s.cinemaHall ch JOIN FETCH ch.cinema WHERE s.movie = :movie AND s.showDate = :showDate AND s.active = true ORDER BY s.startTime")
         List<Showtime> findActiveShowtimesByMovieAndDate(@Param("movie") Movie movie,
                         @Param("showDate") LocalDate showDate);
 
