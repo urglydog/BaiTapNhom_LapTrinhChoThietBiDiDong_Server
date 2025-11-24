@@ -27,6 +27,30 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
            "WHERE b.user = :user ORDER BY b.bookingDate DESC")
     List<Booking> findByUserOrderByBookingDateDesc(@Param("user") User user);
 
+    @Query("SELECT DISTINCT b FROM Booking b " +
+           "LEFT JOIN FETCH b.user u " +
+           "LEFT JOIN FETCH b.showtime s " +
+           "LEFT JOIN FETCH s.movie m " +
+           "LEFT JOIN FETCH s.cinemaHall ch " +
+           "LEFT JOIN FETCH ch.cinema c " +
+           "LEFT JOIN FETCH b.promotion p " +
+           "LEFT JOIN FETCH b.bookingItems bi " +
+           "LEFT JOIN FETCH bi.seat " +
+           "WHERE b.id = :id")
+    Optional<Booking> findByIdWithDetails(@Param("id") int id);
+
+    @Query("SELECT DISTINCT b FROM Booking b " +
+           "LEFT JOIN FETCH b.user u " +
+           "LEFT JOIN FETCH b.showtime s " +
+           "LEFT JOIN FETCH s.movie m " +
+           "LEFT JOIN FETCH s.cinemaHall ch " +
+           "LEFT JOIN FETCH ch.cinema c " +
+           "LEFT JOIN FETCH b.promotion p " +
+           "LEFT JOIN FETCH b.bookingItems bi " +
+           "LEFT JOIN FETCH bi.seat " +
+           "WHERE b.bookingCode = :bookingCode")
+    Optional<Booking> findByBookingCodeWithDetails(@Param("bookingCode") String bookingCode);
+
     @Query("SELECT b FROM Booking b WHERE b.bookingDate BETWEEN :startDate AND :endDate")
     List<Booking> findByBookingDateBetween(@Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate);

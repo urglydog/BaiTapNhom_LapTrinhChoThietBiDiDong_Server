@@ -28,12 +28,12 @@ public class Booking {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    @JsonBackReference
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({ "bookings", "reviews", "favourites", "hibernateLazyInitializer", "handler", "password" })
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "showtime_id", nullable = false)
-    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({ "bookings" })
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({ "bookings", "hibernateLazyInitializer", "handler" })
     private Showtime showtime;
 
     @Column(name = "booking_code", nullable = false, unique = true)
@@ -60,7 +60,7 @@ public class Booking {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "promotion_id")
-    @JsonBackReference
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({ "userPromotions", "hibernateLazyInitializer", "handler" })
     private Promotion promotion;
 
     @Column(name = "discount_amount", precision = 10, scale = 2)
@@ -72,6 +72,7 @@ public class Booking {
 
     @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
     private List<BookingItem> bookingItems;
 
     // Getter để expose status (alias của bookingStatus) trong JSON response
