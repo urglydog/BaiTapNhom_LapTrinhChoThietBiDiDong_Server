@@ -1,5 +1,7 @@
 package iuh.fit.movieapp.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
@@ -18,6 +20,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "showtimes")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Showtime {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -54,5 +57,6 @@ public class Showtime {
 
     @OneToMany(mappedBy = "showtime", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference
+    @JsonIgnore // Ignore bookings khi list showtimes để tránh proxy serialization issues
     private List<Booking> bookings;
 }
