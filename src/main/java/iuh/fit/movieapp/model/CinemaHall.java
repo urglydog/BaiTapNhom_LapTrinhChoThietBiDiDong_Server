@@ -24,13 +24,19 @@ public class CinemaHall {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cinema_id", nullable = false)
-    @JsonBackReference
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"halls", "cinemaHalls"})
     private Cinema cinema;
 
     // Getter để expose cinemaId trong JSON response
     @com.fasterxml.jackson.annotation.JsonGetter("cinemaId")
     public int getCinemaId() {
         return cinema != null ? cinema.getId() : 0;
+    }
+
+    // Getter để expose name (alias của hallName) trong JSON response
+    @com.fasterxml.jackson.annotation.JsonGetter("name")
+    public String getName() {
+        return hallName;
     }
 
     @Column(name = "hall_name", nullable = false)
