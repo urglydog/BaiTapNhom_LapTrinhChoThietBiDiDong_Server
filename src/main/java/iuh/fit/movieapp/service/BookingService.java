@@ -42,12 +42,12 @@ public class BookingService {
     }
 
     public Booking findByBookingCode(String bookingCode) {
-        return bookingRepo.findByBookingCode(bookingCode)
+        return bookingRepo.findByBookingCodeWithDetails(bookingCode)
                 .orElseThrow(() -> new AppException(ErrorCode.BOOKING_NOT_FOUND));
     }
 
     public Booking findById(int id) {
-        return bookingRepo.findById(id)
+        return bookingRepo.findByIdWithDetails(id)
                 .orElseThrow(() -> new AppException(ErrorCode.BOOKING_NOT_FOUND));
     }
 
