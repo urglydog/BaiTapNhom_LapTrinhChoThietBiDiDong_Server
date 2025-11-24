@@ -18,6 +18,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     public List<User> findAll() {
+        // Simply return users - lazy collections will be ignored due to @JsonIgnore
         return userRepo.findAll();
     }
 
