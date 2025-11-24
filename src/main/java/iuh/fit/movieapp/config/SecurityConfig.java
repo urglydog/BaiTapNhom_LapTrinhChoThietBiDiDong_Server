@@ -26,7 +26,8 @@ public class SecurityConfig {
             "/api/cinemas/**",
             "/api/showtimes/**",
             "/api/reviews/**",
-            "/api/favourites/**"
+            "/api/favourites/**",
+            "/api/chat/**",
     };
 
     @Autowired

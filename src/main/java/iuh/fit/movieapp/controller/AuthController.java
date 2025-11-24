@@ -11,7 +11,10 @@ import iuh.fit.movieapp.model.Role;
 import iuh.fit.movieapp.model.User;
 import iuh.fit.movieapp.repository.UserRepository;
 import iuh.fit.movieapp.security.UserDetail;
+import iuh.fit.movieapp.service.MailService;
+import iuh.fit.movieapp.service.OtpService;
 import iuh.fit.movieapp.util.JwtUtil;
+import jakarta.mail.MessagingException;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -41,6 +44,10 @@ public class AuthController {
 
     @Autowired
     private JwtUtil jwtUtil;
+    @Autowired
+    private OtpService otpService;
+    @Autowired
+    private MailService mailService;
 
     @PostMapping("/login")
     public ApiResponse<?> login(@RequestBody LoginRequest request) {
@@ -202,5 +209,51 @@ public class AuthController {
         } catch (Exception e) {
             return new ApiResponse<>(ErrorCode.UNKNOWN_ERROR);
         }
+    }
+
+    // ================= Get OTP ============
+    @PostMapping("/send-otp")
+    public ApiResponse<?> sendOtp(@RequestParam String email, @RequestParam(defaultValue = "REGISTER") String type) throws MessagingException {
+        if ("REGISTER".equals(type)) {
+            // For registration, email should NOT exist
+            if (userRepository.existsByEmail(email)) {
+                return new ApiResponse<>(ErrorCode.EMAIL_EXISTED);
+            }
+        } else if ("RESET_PASSWORD".equals(type)) {
+            // For password reset, email MUST exist
+            if (!userRepository.existsByEmail(email)) {
+                return new ApiResponse<>(ErrorCode.USER_NOT_FOUND);
+            }
+        }
+
+        String otp = otpService.generateOtp(email);
+        mailService.sendOtpMail(email);
+        return new ApiResponse<>(SuccessCode.OTP_SENT, email);
+    }
+
+    // ================= Send OTP for Registration ============
+    @PostMapping("/send-otp-register")
+    public ApiResponse<?> sendOtpForRegister(@RequestParam String email) throws MessagingException {
+        // For registration, email should NOT exist
+        if (userRepository.existsByEmail(email)) {
+            return new ApiResponse<>(ErrorCode.EMAIL_EXISTED);
+        }
+
+        String otp = otpService.generateOtp(email);
+        mailService.sendOtpMail(email);
+        return new ApiResponse<>(SuccessCode.OTP_SENT, email);
+    }
+
+    // ================= Send OTP for Password Reset ============
+    @PostMapping("/send-otp-reset")
+    public ApiResponse<?> sendOtpForReset(@RequestParam String email) throws MessagingException {
+        // For password reset, email MUST exist
+        if (!userRepository.existsByEmail(email)) {
+            return new ApiResponse<>(ErrorCode.USER_NOT_FOUND);
+        }
+
+        String otp = otpService.generateOtp(email);
+        mailService.sendOtpMail(email);
+        return new ApiResponse<>(SuccessCode.OTP_SENT, email);
     }
 }
