@@ -17,7 +17,14 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
 
     Optional<Booking> findByBookingCode(String bookingCode);
 
-    @Query("SELECT b FROM Booking b WHERE b.user = :user ORDER BY b.bookingDate DESC")
+    @Query("SELECT DISTINCT b FROM Booking b " +
+           "JOIN FETCH b.showtime s " +
+           "JOIN FETCH s.movie m " +
+           "JOIN FETCH s.cinemaHall ch " +
+           "JOIN FETCH ch.cinema c " +
+           "LEFT JOIN FETCH b.bookingItems bi " +
+           "LEFT JOIN FETCH bi.seat " +
+           "WHERE b.user = :user ORDER BY b.bookingDate DESC")
     List<Booking> findByUserOrderByBookingDateDesc(@Param("user") User user);
 
     @Query("SELECT b FROM Booking b WHERE b.bookingDate BETWEEN :startDate AND :endDate")
