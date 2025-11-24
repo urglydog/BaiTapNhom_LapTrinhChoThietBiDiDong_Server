@@ -62,7 +62,11 @@ public enum SuccessCode {
     PROMOTION_DELETED(200, "Promotion deleted successfully"),
 
     // === GENERAL ===
-    FETCH_SUCCESS(200, "Data fetched successfully");
+    FETCH_SUCCESS(200, "Data fetched successfully"),
+
+    // === OTP ==
+    OTP_SENT(200, "Sent otp successfully")
+    ;
 
     private final int code;
     private final String message;
