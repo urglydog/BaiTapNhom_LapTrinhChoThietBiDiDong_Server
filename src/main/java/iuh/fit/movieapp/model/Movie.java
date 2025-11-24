@@ -1,6 +1,5 @@
 package iuh.fit.movieapp.model;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -48,6 +47,7 @@ public class Movie {
     private String cast;
 
     @Column(name = "rating", precision = 2, scale = 1)
+    @Builder.Default
     private BigDecimal rating = BigDecimal.ZERO;
 
     @Column(name = "poster_url")
@@ -66,17 +66,18 @@ public class Movie {
     private String ageRating;
 
     @Column(name = "is_active")
+    @Builder.Default
     private Boolean active = true;
 
     @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonManagedReference
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private List<Showtime> showtimes;
 
     @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonManagedReference
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private List<Review> reviews;
 
     @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonManagedReference
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private List<Favourite> favourites;
 }
