@@ -1,6 +1,7 @@
 package iuh.fit.movieapp.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,6 +15,7 @@ import lombok.*;
 
 @Entity
 @Table(name = "favourites")
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class Favourite {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,6 +28,6 @@ public class Favourite {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "movie_id", nullable = false)
-    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"favourites", "reviews", "showtimes"})
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({ "favourites", "reviews", "showtimes" })
     private Movie movie;
 }

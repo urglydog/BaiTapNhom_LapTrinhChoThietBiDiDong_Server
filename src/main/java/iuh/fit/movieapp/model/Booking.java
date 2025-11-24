@@ -1,6 +1,7 @@
 package iuh.fit.movieapp.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
@@ -19,6 +20,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "bookings")
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class Booking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,7 +33,7 @@ public class Booking {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "showtime_id", nullable = false)
-    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"bookings"})
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({ "bookings" })
     private Showtime showtime;
 
     @Column(name = "booking_code", nullable = false, unique = true)
