@@ -1,6 +1,7 @@
 package iuh.fit.movieapp.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -16,6 +17,7 @@ import java.math.BigDecimal;
 
 @Entity
 @Table(name = "booking_items")
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class BookingItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,7 +30,7 @@ public class BookingItem {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "seat_id", nullable = false)
-    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"cinemaHall", "bookings"})
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"cinemaHall", "bookings", "hibernateLazyInitializer", "handler"})
     private Seat seat;
 
     @Column(name = "price", nullable = false, precision = 10, scale = 2)
