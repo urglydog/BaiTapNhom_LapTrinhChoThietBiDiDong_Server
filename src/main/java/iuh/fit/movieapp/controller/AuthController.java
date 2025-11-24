@@ -30,6 +30,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
+@CrossOrigin(origins = "*", maxAge = 3600)
 @AllArgsConstructor
 public class AuthController {
 
@@ -213,22 +214,44 @@ public class AuthController {
 
     // ================= Get OTP ============
     @PostMapping("/send-otp")
-    public ApiResponse<?> sendOtp(@RequestParam String email, @RequestParam(defaultValue = "REGISTER") String type) throws MessagingException {
-        if ("REGISTER".equals(type)) {
-            // For registration, email should NOT exist
-            if (userRepository.existsByEmail(email)) {
-                return new ApiResponse<>(ErrorCode.EMAIL_EXISTED);
+    public ApiResponse<?> sendOtp(@RequestParam String email, @RequestParam(defaultValue = "REGISTER") String type) {
+        try {
+            if (email == null || email.trim().isEmpty()) {
+                ApiResponse<Object> response = new ApiResponse<>(ErrorCode.UNKNOWN_ERROR);
+                response.setMessage("Email không được để trống");
+                return response;
             }
-        } else if ("RESET_PASSWORD".equals(type)) {
-            // For password reset, email MUST exist
-            if (!userRepository.existsByEmail(email)) {
-                return new ApiResponse<>(ErrorCode.USER_NOT_FOUND);
-            }
-        }
 
-        String otp = otpService.generateOtp(email);
-        mailService.sendOtpMail(email);
-        return new ApiResponse<>(SuccessCode.OTP_SENT, email);
+            if ("REGISTER".equals(type)) {
+                // For registration, email should NOT exist
+                if (userRepository.existsByEmail(email)) {
+                    return new ApiResponse<>(ErrorCode.EMAIL_EXISTED);
+                }
+            } else if ("RESET_PASSWORD".equals(type)) {
+                // For password reset, email MUST exist
+                if (!userRepository.existsByEmail(email)) {
+                    return new ApiResponse<>(ErrorCode.USER_NOT_FOUND);
+                }
+            }
+
+            String otp = otpService.generateOtp(email);
+            mailService.sendOtpMail(email);
+            return new ApiResponse<>(SuccessCode.OTP_SENT, email);
+        } catch (MessagingException e) {
+            // Log error for debugging
+            System.err.println("Error sending OTP email: " + e.getMessage());
+            e.printStackTrace();
+            ApiResponse<Object> response = new ApiResponse<>(ErrorCode.UNKNOWN_ERROR);
+            response.setMessage("Không thể gửi email OTP. Vui lòng thử lại sau.");
+            return response;
+        } catch (Exception e) {
+            // Log error for debugging
+            System.err.println("Error in sendOtp: " + e.getMessage());
+            e.printStackTrace();
+            ApiResponse<Object> response = new ApiResponse<>(ErrorCode.UNKNOWN_ERROR);
+            response.setMessage("Đã xảy ra lỗi khi gửi OTP: " + e.getMessage());
+            return response;
+        }
     }
 
     // ================= Send OTP for Registration ============
