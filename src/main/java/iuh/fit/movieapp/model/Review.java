@@ -1,6 +1,7 @@
 package iuh.fit.movieapp.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,6 +15,7 @@ import lombok.*;
 
 @Entity
 @Table(name = "reviews")
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class Review {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
