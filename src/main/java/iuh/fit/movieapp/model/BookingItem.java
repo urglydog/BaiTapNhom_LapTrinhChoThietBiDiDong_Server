@@ -28,7 +28,7 @@ public class BookingItem {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "seat_id", nullable = false)
-    @JsonBackReference
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"cinemaHall", "bookings"})
     private Seat seat;
 
     @Column(name = "price", nullable = false, precision = 10, scale = 2)

@@ -31,7 +31,7 @@ public class Booking {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "showtime_id", nullable = false)
-    @JsonBackReference
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"bookings"})
     private Showtime showtime;
 
     @Column(name = "booking_code", nullable = false, unique = true)
@@ -71,6 +71,12 @@ public class Booking {
     @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<BookingItem> bookingItems;
+
+    // Getter để expose status (alias của bookingStatus) trong JSON response
+    @com.fasterxml.jackson.annotation.JsonGetter("status")
+    public String getStatus() {
+        return bookingStatus != null ? bookingStatus.name() : BookingStatus.PENDING.name();
+    }
 
     public enum BookingStatus {
         PENDING, CONFIRMED, CANCELLED, COMPLETED

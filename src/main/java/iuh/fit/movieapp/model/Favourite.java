@@ -26,6 +26,6 @@ public class Favourite {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "movie_id", nullable = false)
-    @JsonBackReference
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"favourites", "reviews", "showtimes"})
     private Movie movie;
 }
