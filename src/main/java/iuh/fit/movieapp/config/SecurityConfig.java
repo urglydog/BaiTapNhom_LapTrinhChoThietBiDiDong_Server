@@ -28,6 +28,9 @@ public class SecurityConfig {
             "/api/reviews/**",
             "/api/favourites/**",
             "/api/chat/**",
+            "/api/vnpay/return",
+            "/api/vnpay/ipn",
+            "/api/vnpay/test", // Test endpoint
     };
 
     @Autowired
