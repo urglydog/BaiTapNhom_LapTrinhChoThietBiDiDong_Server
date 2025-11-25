@@ -65,8 +65,8 @@ public enum SuccessCode {
     FETCH_SUCCESS(200, "Data fetched successfully"),
 
     // === OTP ==
-    OTP_SENT(200, "Sent otp successfully")
-    ;
+    OTP_SENT(200, "Sent otp successfully"),
+    OTP_VERIFIED(200, "OTP verified successfully");
 
     private final int code;
     private final String message;
