@@ -1,9 +1,6 @@
 package iuh.fit.movieapp.controller;
 
-import iuh.fit.movieapp.dto.request.ChangePasswordRequest;
-import iuh.fit.movieapp.dto.request.LoginRequest;
-import iuh.fit.movieapp.dto.request.RegisterRequest;
-import iuh.fit.movieapp.dto.request.ResetPasswordRequest;
+import iuh.fit.movieapp.dto.request.*;
 import iuh.fit.movieapp.dto.response.ApiResponse;
 import iuh.fit.movieapp.dto.response.ErrorCode;
 import iuh.fit.movieapp.dto.response.SuccessCode;
@@ -30,7 +27,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "*", maxAge = 3600)
 @AllArgsConstructor
 public class AuthController {
 
@@ -75,6 +71,72 @@ public class AuthController {
             return new ApiResponse<>(ErrorCode.INCORRECT_USERNAME_OR_PASSWORD);
         } catch (Exception e) {
             return new ApiResponse<>(ErrorCode.USER_NOT_FOUND);
+        }
+    }
+
+    // ================= GOOGLE LOGIN =================
+    @PostMapping("/google-login")
+    public ApiResponse<?> googleLogin(@RequestBody GoogleLoginRequest request) {
+        try {
+            // Check if user already exists with this Google ID
+            User existingUser = userRepository.findByGoogleId(request.getGoogleId()).orElse(null);
+
+            if (existingUser != null) {
+                // User exists, generate token and return
+                UserDetail userDetail = new UserDetail(existingUser);
+                String token = jwtUtil.generateToken(userDetail);
+
+                Map<String, Object> data = new HashMap<>();
+                data.put("token", token);
+                data.put("user", existingUser);
+
+                return new ApiResponse<>(SuccessCode.LOGIN_SUCCESSFULLY, data);
+            }
+
+            // Check if email already exists (user registered with email before)
+            User emailUser = userRepository.findByEmail(request.getEmail()).orElse(null);
+            if (emailUser != null) {
+                // Link Google account to existing user
+                emailUser.setGoogleId(request.getGoogleId());
+                emailUser.setAvatarUrl(request.getAvatarUrl());
+                userRepository.save(emailUser);
+
+                UserDetail userDetail = new UserDetail(emailUser);
+                String token = jwtUtil.generateToken(userDetail);
+
+                Map<String, Object> data = new HashMap<>();
+                data.put("token", token);
+                data.put("user", emailUser);
+
+                return new ApiResponse<>(SuccessCode.LOGIN_SUCCESSFULLY, data);
+            }
+
+            // Create new user
+            String username = generateUniqueUsername(request.getEmail());
+            User newUser = User.builder()
+                    .username(username)
+                    .email(request.getEmail())
+                    .password(passwordEncoder.encode("GOOGLE_USER_" + request.getGoogleId())) // Random password for Google users
+                    .fullName(request.getFullName())
+                    .googleId(request.getGoogleId())
+                    .avatarUrl(request.getAvatarUrl())
+                    .role(Role.CUSTOMER)
+                    .active(true)
+                    .build();
+
+            userRepository.save(newUser);
+
+            UserDetail userDetail = new UserDetail(newUser);
+            String token = jwtUtil.generateToken(userDetail);
+
+            Map<String, Object> data = new HashMap<>();
+            data.put("token", token);
+            data.put("user", newUser);
+
+            return new ApiResponse<>(SuccessCode.LOGIN_SUCCESSFULLY, data);
+
+        } catch (Exception e) {
+            return new ApiResponse<>(ErrorCode.UNKNOWN_ERROR);
         }
     }
 
@@ -184,14 +246,14 @@ public class AuthController {
         try {
             // Kiểm tra xem admin đã tồn tại chưa
             User existingAdmin = userRepository.findByUsername("admin").orElse(null);
-            
+
             if (existingAdmin != null) {
                 // Nếu đã tồn tại, reset password về "password"
                 existingAdmin.setPassword(passwordEncoder.encode("password"));
                 existingAdmin.setActive(true);
                 userRepository.save(existingAdmin);
-                return new ApiResponse<>(SuccessCode.RESET_PASSWORD_SUCCESSFULLY, 
-                    "Admin user đã tồn tại. Đã reset password về 'password'");
+                return new ApiResponse<>(SuccessCode.RESET_PASSWORD_SUCCESSFULLY,
+                        "Admin user đã tồn tại. Đã reset password về 'password'");
             } else {
                 // Nếu chưa tồn tại, tạo mới
                 User admin = User.builder()
@@ -204,8 +266,8 @@ public class AuthController {
                         .active(true)
                         .build();
                 userRepository.save(admin);
-                return new ApiResponse<>(SuccessCode.USER_CREATED, 
-                    "Đã tạo admin user mới. Username: admin, Password: password");
+                return new ApiResponse<>(SuccessCode.USER_CREATED,
+                        "Đã tạo admin user mới. Username: admin, Password: password");
             }
         } catch (Exception e) {
             return new ApiResponse<>(ErrorCode.UNKNOWN_ERROR);
@@ -214,44 +276,22 @@ public class AuthController {
 
     // ================= Get OTP ============
     @PostMapping("/send-otp")
-    public ApiResponse<?> sendOtp(@RequestParam String email, @RequestParam(defaultValue = "REGISTER") String type) {
-        try {
-            if (email == null || email.trim().isEmpty()) {
-                ApiResponse<Object> response = new ApiResponse<>(ErrorCode.UNKNOWN_ERROR);
-                response.setMessage("Email không được để trống");
-                return response;
+    public ApiResponse<?> sendOtp(@RequestParam String email, @RequestParam(defaultValue = "REGISTER") String type) throws MessagingException {
+        if ("REGISTER".equals(type)) {
+            // For registration, email should NOT exist
+            if (userRepository.existsByEmail(email)) {
+                return new ApiResponse<>(ErrorCode.EMAIL_EXISTED);
             }
-
-            if ("REGISTER".equals(type)) {
-                // For registration, email should NOT exist
-                if (userRepository.existsByEmail(email)) {
-                    return new ApiResponse<>(ErrorCode.EMAIL_EXISTED);
-                }
-            } else if ("RESET_PASSWORD".equals(type)) {
-                // For password reset, email MUST exist
-                if (!userRepository.existsByEmail(email)) {
-                    return new ApiResponse<>(ErrorCode.USER_NOT_FOUND);
-                }
+        } else if ("RESET_PASSWORD".equals(type)) {
+            // For password reset, email MUST exist
+            if (!userRepository.existsByEmail(email)) {
+                return new ApiResponse<>(ErrorCode.USER_NOT_FOUND);
             }
-
-            String otp = otpService.generateOtp(email);
-            mailService.sendOtpMail(email);
-            return new ApiResponse<>(SuccessCode.OTP_SENT, email);
-        } catch (MessagingException e) {
-            // Log error for debugging
-            System.err.println("Error sending OTP email: " + e.getMessage());
-            e.printStackTrace();
-            ApiResponse<Object> response = new ApiResponse<>(ErrorCode.UNKNOWN_ERROR);
-            response.setMessage("Không thể gửi email OTP. Vui lòng thử lại sau.");
-            return response;
-        } catch (Exception e) {
-            // Log error for debugging
-            System.err.println("Error in sendOtp: " + e.getMessage());
-            e.printStackTrace();
-            ApiResponse<Object> response = new ApiResponse<>(ErrorCode.UNKNOWN_ERROR);
-            response.setMessage("Đã xảy ra lỗi khi gửi OTP: " + e.getMessage());
-            return response;
         }
+
+        String otp = otpService.generateOtp(email);
+        mailService.sendOtpMail(email);
+        return new ApiResponse<>(SuccessCode.OTP_SENT, email);
     }
 
     // ================= Send OTP for Registration ============
@@ -278,5 +318,30 @@ public class AuthController {
         String otp = otpService.generateOtp(email);
         mailService.sendOtpMail(email);
         return new ApiResponse<>(SuccessCode.OTP_SENT, email);
+    }
+
+    // ================= Verify OTP ============
+    @PostMapping("/verify-otp")
+    public ApiResponse<?> verifyOtp(@RequestParam String email, @RequestParam String otp) {
+        boolean isValid = otpService.verifyOtp(email, otp);
+        if (isValid) {
+            return new ApiResponse<>(SuccessCode.OTP_VERIFIED, "OTP verified successfully");
+        } else {
+            return new ApiResponse<>(ErrorCode.INVALID_OTP);
+        }
+    }
+
+    // ================= Helper method =================
+    private String generateUniqueUsername(String email) {
+        String baseUsername = email.substring(0, email.indexOf('@'));
+        String username = baseUsername;
+        int counter = 1;
+
+        while (userRepository.existsByUsername(username)) {
+            username = baseUsername + counter;
+            counter++;
+        }
+
+        return username;
     }
 }

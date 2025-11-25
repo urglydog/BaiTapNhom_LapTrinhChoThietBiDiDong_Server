@@ -51,6 +51,9 @@ public class User {
     @Column(name = "avatar_url")
     private String avatarUrl;
 
+    @Column(name = "google_id", unique = true)
+    private String googleId;
+
     @Column(name = "is_active")
     @Builder.Default
     private Boolean active = true;
