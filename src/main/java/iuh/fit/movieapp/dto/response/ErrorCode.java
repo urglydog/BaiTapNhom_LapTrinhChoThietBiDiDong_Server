@@ -59,6 +59,9 @@ public enum ErrorCode {
     PROMOTION_LIMIT_REACHED(409, "Promotion usage limit has been reached"),
     PROMOTION_MIN_AMOUNT_NOT_MET(400, "Order amount does not meet promotion minimum requirement"),
 
+    // === OTP ===
+    INVALID_OTP(400, "Invalid or expired OTP"),
+
     // === GENERAL ===
     TOKEN_EXPIRED(403, "Token has expired"),
     UNAUTHORIZED(401, "Unauthorized access"),
